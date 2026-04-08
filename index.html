@@ -662,8 +662,14 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
           <button class="btn" style="width:80px;" onclick="sendReply()">Send</button>
         </div>
         <div id="reply-status" style="font-size:11px;color:var(--muted);margin-top:6px;"></div>
-      </div>
-    </div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">Internal note</div>
+          <textarea id="convo-note-input" placeholder="Add a private note for your team..." style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:9px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:none;height:64px;line-height:1.5;"></textarea>
+          <button onclick="saveConvoNote()" style="margin-top:6px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);color:var(--text);font-size:12px;padding:6px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;">Save note</button>
+          <span id="note-save-status" style="font-size:11px;color:var(--muted);margin-left:8px;"></span>
+        </div>
+      </div><!-- end convo-view -->
+    </div><!-- end s-messages -->
 
     <!-- REPORTS -->
     <div class="screen" id="s-reports">
@@ -1217,6 +1223,7 @@ function onConfigLoaded(){
   // Load inbox state (tags + filter) — Firebase preferred, localStorage already loaded as fallback
   fsLoadDoc('inboxTags',   function(d){ if(d && typeof d === 'object') convoTags = d; });
   fsLoadDoc('inboxFilter', function(d){ if(d && d.filter) inboxTagFilter = d.filter; });
+  fsLoadDoc('inboxNotes',  function(d){ if(d && typeof d === 'object') convoNotes = d; });
 
   // Start real-time listeners for orders/expenses/tasks
   startListeners();
@@ -2800,7 +2807,8 @@ var currentConvoName = '';
 var inboxData = [];
 var nextInboxCursor = null;
 var inboxTagFilter = (function(){ try{ return localStorage.getItem('cx_inbox_filter')||'all'; }catch(e){ return 'all'; } })();
-var convoTags = (function(){ try{ return JSON.parse(localStorage.getItem('cx_convo_tags')||'{}'); }catch(e){ return {}; } })();
+var convoTags  = (function(){ try{ return JSON.parse(localStorage.getItem('cx_convo_tags')||'{}'); }catch(e){ return {}; } })();
+var convoNotes = (function(){ try{ return JSON.parse(localStorage.getItem('cx_convo_notes')||'{}'); }catch(e){ return {}; } })();
 
 var INBOX_TAGS = ['Lead','Follow-up','Urgent','Paid','Spam'];
 var TAG_COLORS = {
@@ -2814,6 +2822,19 @@ var TAG_COLORS = {
 function saveConvoTags(){
   try{ localStorage.setItem('cx_convo_tags', JSON.stringify(convoTags)); }catch(e){}
   if(typeof fsSaveDoc === 'function') fsSaveDoc('inboxTags', convoTags);
+}
+
+function saveConvoNote(){
+  if(!currentConvoId) return;
+  var input = document.getElementById('convo-note-input');
+  var status = document.getElementById('note-save-status');
+  if(!input) return;
+  var text = input.value.trim();
+  if(text) convoNotes[currentConvoId] = text;
+  else delete convoNotes[currentConvoId];
+  try{ localStorage.setItem('cx_convo_notes', JSON.stringify(convoNotes)); }catch(e){}
+  if(typeof fsSaveDoc === 'function') fsSaveDoc('inboxNotes', convoNotes);
+  if(status){ status.textContent = 'Saved'; setTimeout(function(){ status.textContent = ''; }, 1500); }
 }
 
 function toggleConvoTag(tag){
@@ -3019,6 +3040,7 @@ function renderInbox(){
       + '<div style="font-size:11px;color:var(--muted);">' + displayTime + '</div>'
       + (isUnread ? '<div style="background:var(--danger);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;text-align:center;">' + unread + '</div>' : '')
       + '</div>'
+      + (convoNotes[convo.id] ? '<div style="font-size:10px;color:var(--muted);" title="Has internal note">&#x1F4DD;</div>' : '')
       + '</div></div>';
   }).join('');
 
@@ -3060,6 +3082,11 @@ function openConvo(convoId, name){
   var filterBar = document.getElementById('inbox-filter-bar');
   if(filterBar) filterBar.style.display = 'none';
   renderConvoTagRow();
+  // Populate internal note
+  var noteInput = document.getElementById('convo-note-input');
+  var noteStatus = document.getElementById('note-save-status');
+  if(noteInput) noteInput.value = convoNotes[convoId] || '';
+  if(noteStatus) noteStatus.textContent = '';
   loadMessages(convoId);
 }
 
