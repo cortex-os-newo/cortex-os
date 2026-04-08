@@ -744,6 +744,20 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
 
         <div class="screen" id="s-settings">
 
+      <div class="sec">Notifications</div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:500;">Message alert sound</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Play a sound when a new message arrives</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button id="sound-on" class="type-btn" onclick="setNotifSound(true)" style="width:64px;padding:8px;">🔔 On</button>
+            <button id="sound-off" class="type-btn" onclick="setNotifSound(false)" style="width:64px;padding:8px;">🔕 Off</button>
+          </div>
+        </div>
+      </div>
+
       <div class="sec">Appearance</div>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -1461,6 +1475,8 @@ function renderPricingSummary(){
 }
 
 function loadSettingsForm(){
+  // Sync notification sound toggle
+  setNotifSound(notifSoundEnabled);
   document.getElementById('st-clothes-kg').value     = pricing.clothesKg;
   document.getElementById('st-clothes-price').value  = pricing.clothesPrice;
   document.getElementById('st-clothes-excess').value = pricing.clothesExcess;
@@ -1874,7 +1890,8 @@ function go(id, btn){
   refresh();
   if(id === 'settings') loadSettingsForm();
   if(id === 'reports')  renderReports();
-  if(id === 'messages') setTimeout(function(){ loadInbox(); }, 0);
+  if(id === 'messages') setTimeout(function(){ loadInbox(); startInboxPoll(); }, 0);
+  else stopInboxPoll();
   if(id === 'team')     renderTeam();
   // Show FAB only on operational screens
   var fab = document.getElementById('main-fab');
@@ -2873,6 +2890,9 @@ var currentConvoId = null;
 var currentConvoName = '';
 var inboxData = [];
 var nextInboxCursor = null;
+var inboxPollInterval = null;
+var lastSeenConvoState = {}; // { convoId: updated_time } for dedup
+var notifSoundEnabled = (function(){ try{ return localStorage.getItem('cx_notif_sound') !== 'off'; }catch(e){ return true; } })();
 var inboxTagFilter = (function(){ try{ return localStorage.getItem('cx_inbox_filter')||'all'; }catch(e){ return 'all'; } })();
 var convoTags  = (function(){ try{ return JSON.parse(localStorage.getItem('cx_convo_tags')||'{}'); }catch(e){ return {}; } })();
 var convoNotes = (function(){ try{ return JSON.parse(localStorage.getItem('cx_convo_notes')||'{}'); }catch(e){ return {}; } })();
@@ -2930,6 +2950,98 @@ function renderConvoTagRow(){
       + tag
       + '</button>';
   }).join('');
+}
+
+// ── INBOX POLLING + NOTIFICATIONS ────────────────────────────
+
+function setNotifSound(on){
+  notifSoundEnabled = on;
+  try{ localStorage.setItem('cx_notif_sound', on ? 'on' : 'off'); }catch(e){}
+  var onBtn  = document.getElementById('sound-on');
+  var offBtn = document.getElementById('sound-off');
+  if(onBtn)  onBtn.classList.toggle('active', on);
+  if(offBtn) offBtn.classList.toggle('active', !on);
+}
+
+function requestNotifPermission(){
+  if('Notification' in window && Notification.permission === 'default'){
+    Notification.requestPermission().catch(function(){});
+  }
+}
+
+function playNotifSound(){
+  if(!notifSoundEnabled) return;
+  try{
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  }catch(e){}
+}
+
+function showNewMessageNotif(name, preview){
+  // In-app toast
+  toast('💬 New message from ' + name);
+  // Browser notification if permitted
+  if('Notification' in window && Notification.permission === 'granted'){
+    try{
+      new Notification('New message — ' + name, {
+        body: preview || 'New message received',
+        icon: 'icon-192.png',
+        tag: 'cortex-msg-' + name  // tag prevents duplicate browser notifs per sender
+      });
+    }catch(e){}
+  }
+  playNotifSound();
+}
+
+function checkInboxForNew(){
+  if(!PAGE_TOKEN) return;
+  fetch(GRAPH + '/me/conversations?fields=participants,updated_time,unread_count,messages{message,from,created_time}&limit=10&access_token=' + PAGE_TOKEN)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(!data.data) return;
+      data.data.forEach(function(convo){
+        var updated = convo.updated_time;
+        var unread  = convo.unread_count || 0;
+        var prev    = lastSeenConvoState[convo.id];
+
+        // Detect new activity: updated_time changed AND has unread messages
+        if(unread > 0 && prev && prev !== updated){
+          var participants = (convo.participants && convo.participants.data) || [];
+          var client = participants.find(function(p){ return p.name !== 'LabaLuxe'; }) || participants[0] || {};
+          var name = client.name || 'Someone';
+          var msgs = (convo.messages && convo.messages.data) || [];
+          var preview = msgs[0] ? msgs[0].message : '';
+          showNewMessageNotif(name, preview);
+          // Update inboxData if loaded so unread badge refreshes
+          var existing = inboxData.find(function(c){ return c.id === convo.id; });
+          if(existing){ existing.unread_count = unread; existing.updated_time = updated; renderInbox(); }
+        }
+        // Always update last seen state
+        lastSeenConvoState[convo.id] = updated;
+      });
+    })
+    .catch(function(){});
+}
+
+function startInboxPoll(){
+  if(inboxPollInterval) return; // already running
+  requestNotifPermission();
+  // Seed lastSeenConvoState from current inboxData so first poll doesn't false-positive
+  inboxData.forEach(function(c){ if(c.updated_time) lastSeenConvoState[c.id] = c.updated_time; });
+  inboxPollInterval = setInterval(checkInboxForNew, 20000); // every 20s
+}
+
+function stopInboxPoll(){
+  if(inboxPollInterval){ clearInterval(inboxPollInterval); inboxPollInterval = null; }
 }
 
 function setInboxFilter(filter, btn){
