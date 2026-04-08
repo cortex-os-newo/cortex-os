@@ -995,6 +995,29 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script>
+// ── doLogin hoisted to top for debug ──────────────────────────
+window.doLogin = function doLogin(){
+  console.log('doLogin triggered');
+  var email = document.getElementById('login-email').value.trim();
+  var pass  = document.getElementById('login-password').value;
+  var load  = document.getElementById('login-loading');
+  var err   = document.getElementById('login-error');
+  if(!email || !pass){ showLoginError('Enter email and password'); return; }
+  err.style.display  = 'none';
+  load.style.display = 'block';
+  load.textContent   = 'Signing in...';
+  if(!auth){
+    var attempts = 0;
+    var wait = setInterval(function(){
+      attempts++;
+      if(auth){ clearInterval(wait); attemptLogin(email, pass); }
+      else if(attempts > 20){ clearInterval(wait); load.style.display = 'none'; showLoginError('Firebase not loaded. Check internet connection.'); }
+    }, 250);
+    return;
+  }
+  attemptLogin(email, pass);
+};
+
 
 // ── FIREBASE INIT ─────────────────────────────────────────────
 var db, auth;
@@ -1049,37 +1072,6 @@ function initFirebase(){
 
 
 // ── AUTH ──────────────────────────────────────────────────────
-function doLogin(){
-  var email = document.getElementById('login-email').value.trim();
-  var pass  = document.getElementById('login-password').value;
-  var load  = document.getElementById('login-loading');
-  var err   = document.getElementById('login-error');
-
-  if(!email || !pass){ showLoginError('Enter email and password'); return; }
-
-  err.style.display  = 'none';
-  load.style.display = 'block';
-  load.textContent   = 'Signing in...';
-
-  // If Firebase not ready yet, wait for it
-  if(!auth){
-    var attempts = 0;
-    var wait = setInterval(function(){
-      attempts++;
-      if(auth){
-        clearInterval(wait);
-        attemptLogin(email, pass);
-      } else if(attempts > 20){
-        clearInterval(wait);
-        load.style.display = 'none';
-        showLoginError('Firebase not loaded. Check internet connection.');
-      }
-    }, 250);
-    return;
-  }
-  attemptLogin(email, pass);
-}
-
 function attemptLogin(email, pass){
   var load = document.getElementById('login-loading');
   auth.signInWithEmailAndPassword(email, pass)
@@ -3796,12 +3788,12 @@ function renderTeam(){
         var u = doc.data();
         var role = u.role || 'user';
         var roleColor = role === 'admin' ? 'var(--accent)' : 'var(--muted)';
-        html += '<div class="card" style="display:flex;justify-content:space-between;align-items:center;">'\
-          + '<div>'\
-          + '<div style="font-size:14px;font-weight:500;">' + (u.email || '—') + '</div>'\
-          + '<div style="font-size:11px;color:var(--muted);margin-top:3px;">UID: ' + (u.uid || doc.id) + '</div>'\
-          + '</div>'\
-          + '<span style="font-size:11px;font-weight:600;color:' + roleColor + ';background:' + roleColor + '20;padding:3px 10px;border-radius:10px;">' + role + '</span>'\
+        html += '<div class="card" style="display:flex;justify-content:space-between;align-items:center;">'
+          + '<div>'
+          + '<div style="font-size:14px;font-weight:500;">' + (u.email || '—') + '</div>'
+          + '<div style="font-size:11px;color:var(--muted);margin-top:3px;">UID: ' + (u.uid || doc.id) + '</div>'
+          + '</div>'
+          + '<span style="font-size:11px;font-weight:600;color:' + roleColor + ';background:' + roleColor + '20;padding:3px 10px;border-radius:10px;">' + role + '</span>'
           + '</div>';
       });
       el.innerHTML = html;
