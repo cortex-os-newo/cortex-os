@@ -1,0 +1,3569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0f">
+<title>CORTEX OS</title>
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CORTEX OS">
+<meta name="application-name" content="CORTEX OS">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c26;--surface3:#22222f;
+  --border:#ffffff10;--border2:#ffffff1a;
+  --text:#f0ede8;--muted:#6b6880;--hint:#3d3b4a;
+  --accent:#7fd6a0;--accent2:#f0a864;--accent3:#7eb8f7;--danger:#f07070;
+  --r:14px;--r-sm:10px;
+}
+
+/* ── MOBILE BASE ─────────────────────────────────────────────── */
+html{ height:100%; }
+body{ min-height:100%; background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; }
+#app{ display:flex; flex-direction:column; max-width:430px; margin:0 auto; min-height:100vh; }
+
+.topbar{padding:16px 18px 10px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;letter-spacing:-.5px;}
+.brand em{color:var(--accent);font-style:normal;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.date-pill{background:var(--surface);border:1px solid var(--border);padding:5px 11px;border-radius:20px;font-size:11px;color:var(--muted);}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--danger);display:none;}
+.notif-dot.on{display:block;}
+
+.tabs{display:flex;gap:6px;padding:0 18px 12px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 13px;border-radius:20px;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap;cursor:pointer;transition:all .18s;flex-shrink:0;}
+.tab-btn.active{background:var(--accent);border-color:var(--accent);color:#0a0a0f;font-weight:600;}
+
+.sidebar{ display:none; }
+.body-row{ display:block; }
+
+.scroll{ display:block; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.main-content{ display:block; }
+.screen{display:none;padding:2px 18px 100px;animation:fi .2s ease;}
+.screen.active{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.sec{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:18px 0 9px;}
+.up{color:var(--accent);}.warn{color:var(--accent2);}.info{color:var(--accent3);}.red{color:var(--danger);}
+
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px;}
+.kc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px;}
+.kc.wide{grid-column:1/-1;}
+.kc.accent-border{border-color:var(--accent);}
+.kl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;}
+.kv{font-family:'Syne',sans-serif;font-size:21px;font-weight:700;}
+.ks{font-size:11px;color:var(--muted);margin-top:3px;}
+.prog{height:5px;background:var(--surface2);border-radius:3px;margin-top:7px;overflow:hidden;}
+.pf{height:100%;border-radius:3px;background:var(--accent);transition:width .7s cubic-bezier(.4,0,.2,1);}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:9px;}
+.card-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.cname{font-weight:500;font-size:14px;}
+.cmeta{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5;}
+.camount{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--accent);white-space:nowrap;}
+
+.pill{font-size:10px;padding:3px 9px;border-radius:10px;font-weight:600;margin-top:6px;display:inline-block;cursor:pointer;transition:opacity .15s;}
+.pill:hover{opacity:.8;}
+.sp{background:#f0a86420;color:var(--accent2);}
+.sw{background:#7eb8f720;color:var(--accent3);}
+.sr{background:#7fd6a020;color:var(--accent);}
+.sd{background:#ffffff0e;color:var(--muted);}
+
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .18s;-webkit-appearance:none;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6880' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+.field select option{background:#1c1c26;}
+.field textarea{resize:none;height:72px;line-height:1.5;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.calc-box{background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:13px;margin-bottom:12px;}
+
+.btn{width:100%;background:var(--accent);color:#0a0a0f;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;border:none;border-radius:var(--r-sm);padding:13px;cursor:pointer;transition:opacity .18s;}
+.btn:hover{opacity:.86;}.btn:active{opacity:.7;}
+.btn-ghost{width:100%;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;border:1px solid var(--border2);border-radius:var(--r-sm);padding:11px;cursor:pointer;margin-top:7px;}
+.btn-sm{background:var(--accent);color:#0a0a0f;border:none;border-radius:8px;padding:6px 13px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.btn-sm-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 11px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.btn-danger{background:transparent;color:var(--danger);border:none;font-size:18px;cursor:pointer;padding:2px 6px;line-height:1;opacity:.6;}
+.btn-danger:hover{opacity:1;}
+.btn-sms{background:transparent;color:var(--accent3);border:1px solid var(--accent3);border-radius:8px;padding:6px 12px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;display:inline-block;}
+
+.ftabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;}
+.ftabs::-webkit-scrollbar{display:none;}
+.ftab{background:var(--surface2);border:none;color:var(--muted);padding:5px 13px;border-radius:20px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s;}
+.ftab.on{background:var(--surface);border:1px solid var(--accent);color:var(--accent);}
+
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.cal-nav{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px;}
+.cal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:14px;}
+.cal-day-label{font-size:10px;color:var(--muted);text-align:center;padding:4px 0;font-weight:500;}
+.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;position:relative;transition:background .15s;}
+.cal-day:hover{background:var(--surface2);}
+.cal-day.today{background:var(--surface2);color:var(--accent);font-weight:700;}
+.cal-day.selected{background:var(--accent);color:#0a0a0f;font-weight:700;}
+.cal-day.has-orders::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;border-radius:50%;background:var(--accent2);}
+.cal-day.selected.has-orders::after{background:#0a0a0f;}
+.cal-day.other-month{opacity:.3;}
+.cal-orders{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px;}
+.cal-order-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
+.cal-order-row:last-child{border-bottom:none;}
+
+.ret-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:9px;}
+.ret-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;}
+.ret-actions{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;}
+
+.exp-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.exp-row:last-child{border-bottom:none;}
+
+.task-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px;margin-bottom:9px;display:flex;gap:11px;align-items:flex-start;}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;flex-shrink:0;}
+
+.fab{position:fixed;bottom:76px;right:16px;width:48px;height:48px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px #7fd6a044;transition:transform .15s;z-index:20;}
+.fab:hover{transform:scale(1.08);}.fab:active{transform:scale(.95);}
+
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0 max(12px,env(safe-area-inset-bottom));z-index:20;}
+.bn{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--muted);font-size:9px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:color .15s;padding:3px 10px;}
+.bn.active{color:var(--accent);}
+.bn svg{width:20px;height:20px;}
+
+.modal-bg{position:fixed;inset:0;background:#00000088;z-index:30;display:none;align-items:flex-end;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--surface2);border-radius:20px 20px 0 0;padding:20px 18px 32px;width:100%;max-height:85%;overflow-y:auto;}
+.modal-handle{width:36px;height:4px;background:var(--hint);border-radius:2px;margin:0 auto 18px;}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;}
+
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--accent);color:#0a0a0f;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:50;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:24px 0;}
+.client-suggest-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;}
+.client-suggest-item:last-child{border-bottom:none;}
+.client-suggest-item:hover,.client-suggest-item.active{background:var(--surface3,#22222f);}
+
+body.light-mode{--bg:#f5f4f0;--surface:#ffffff;--surface2:#f0ede8;--surface3:#e8e4de;--border:#00000012;--border2:#0000001a;--text:#1a1a1a;--muted:#7a7670;--hint:#c0bdb8;--accent:#1a7a4a;--accent2:#b85c00;--accent3:#1a5fa5;--danger:#c0392b;}
+body.light-mode .brand em{color:var(--accent);}
+body.light-mode .btn{background:var(--accent);color:#fff;}
+body.light-mode .fab{background:var(--accent);}
+body.light-mode .fab svg{stroke:#fff;}
+body.light-mode .bn.active{color:var(--accent);}
+body.light-mode .notif-dot{background:var(--danger);}
+body.light-mode .pill.sp{background:#b85c0020;color:var(--accent2);}
+body.light-mode .pill.sw{background:#1a5fa520;color:var(--accent3);}
+body.light-mode .pill.sr{background:#1a7a4a20;color:var(--accent);}
+body.light-mode .pill.sd{background:#00000010;color:var(--muted);}
+body.light-mode .type-btn.active{background:var(--surface2);border-color:var(--accent);color:var(--accent);}
+body.light-mode input,body.light-mode select,body.light-mode textarea{background:var(--surface);border-color:var(--border2);color:var(--text);}
+body.light-mode .calc-box{border-color:var(--accent);}
+body.light-mode .kc.accent-border{border-color:var(--accent);}
+
+.divider{height:1px;background:var(--border);margin:6px 0;}
+.type-btn{flex:1;background:var(--surface);border:1px solid var(--border2);color:var(--muted);padding:10px 6px;border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:5px;}
+.type-btn.active{background:var(--surface2);border-color:var(--accent);color:var(--accent);}
+
+/* ── DESKTOP ─────────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  html, body { height:100%; overflow:hidden; }
+
+  #app {
+    max-width:100%;
+    width:100%;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+
+  .topbar {
+    flex:0 0 56px;
+    height:56px;
+    padding:0 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid var(--border);
+    background:var(--surface);
+    flex-shrink:0;
+  }
+
+  .tabs { display:none !important; }
+  .bnav { display:none !important; }
+  .fab  { display:none !important; }
+
+  .body-row {
+    display:flex;
+    flex-direction:row;
+    flex:1 1 auto;
+    min-height:0;
+    overflow:hidden;
+    height:100%;
+  }
+
+  .sidebar {
+    display:flex !important;
+    flex-direction:column;
+    flex:0 0 220px;
+    width:220px;
+    background:var(--surface);
+    border-right:1px solid var(--border);
+    padding:12px 0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    height:100%;
+  }
+
+  .sidebar-btn {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 20px;
+    background:none;
+    border:none;
+    border-left:3px solid transparent;
+    color:var(--muted);
+    font-family:'DM Sans',sans-serif;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    text-align:left;
+    width:100%;
+    transition:background .15s, color .15s;
+  }
+  .sidebar-btn:hover  { background:var(--surface2); color:var(--text); }
+  .sidebar-btn.active { color:var(--accent); background:var(--surface2); border-left-color:var(--accent); font-weight:600; }
+  .sidebar-btn svg    { width:18px; height:18px; flex-shrink:0; }
+
+  .sidebar-add-btn {
+    margin:12px 16px 0;
+    background:var(--accent);
+    color:#0a0a0f;
+    border:none;
+    border-radius:var(--r-sm);
+    padding:11px;
+    font-family:'Syne',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+    width:calc(100% - 32px);
+  }
+
+  .scroll {
+    flex:1 1 auto;
+    display:block;
+    overflow-y:auto;
+    overflow-x:hidden;
+    min-height:0;
+    height:100%;
+  }
+
+  .main-content { width:100%; flex-shrink:0; }
+  .screen   { padding:28px 36px 60px; max-width:980px; }
+  .kpi-grid { grid-template-columns:repeat(3,1fr); }
+  .card     { padding:18px; }
+  .modal-bg { align-items:center; justify-content:center; }
+  .modal    { border-radius:16px; max-width:500px; width:90%; margin:0; max-height:90vh; }
+}
+
+@media (min-width:1200px) {
+  .sidebar  { flex:0 0 240px; width:240px; }
+  .screen   { max-width:1100px; }
+  .kpi-grid { grid-template-columns:repeat(4,1fr); }
+}
+</style>
+</head>
+<body>
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:var(--bg);">
+  <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;letter-spacing:-.5px;margin-bottom:4px;">CORTEX<em style="color:var(--accent);font-style:normal;">OS</em></div>
+  <div style="font-size:13px;color:var(--muted);margin-bottom:36px;">LabaLuxe Operating System</div>
+  <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
+    <input id="login-email" type="email" placeholder="Email address" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:13px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;">
+    <input id="login-password" type="password" placeholder="Password" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:13px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()" style="width:100%;background:var(--accent);color:#0a0a0f;border:none;border-radius:var(--r-sm);padding:14px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;cursor:pointer;">Sign in</button>
+    <div id="login-error" style="font-size:12px;color:var(--danger);text-align:center;display:none;"></div>
+    <div id="login-loading" style="font-size:12px;color:var(--muted);text-align:center;display:none;">Signing in...</div>
+  </div>
+</div>
+
+<!-- INSTALL PROMPT -->
+<div id="install-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:2px solid var(--accent);padding:14px 18px;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.4);">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div style="width:40px;height:40px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <svg width="22" height="22" fill="none" stroke="#0a0a0f" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 2v13M7 11l5 5 5-5"/><rect x="3" y="18" width="18" height="3" rx="1"/></svg>
+    </div>
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:600;">Install CORTEX OS</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px;" id="install-sub">Add to home screen for the full app experience</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+      <button onclick="dismissInstall()" style="background:none;border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-size:12px;padding:6px 12px;cursor:pointer;">Later</button>
+      <button id="install-btn" onclick="triggerInstall()" style="background:var(--accent);border:none;border-radius:8px;color:#0a0a0f;font-size:12px;font-weight:700;padding:6px 14px;cursor:pointer;">Install</button>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+  <div class="topbar">
+    <div class="brand">CORTEX<em>OS</em></div>
+    <div class="topbar-right">
+      <div class="date-pill" id="datePill"></div>
+      <div class="notif-dot" id="notifDot"></div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="go('dashboard',this)">Dashboard</button>
+    <button class="tab-btn" onclick="go('orders',this)">Orders</button>
+    <button class="tab-btn" onclick="go('calendar',this)">Calendar</button>
+    <button class="tab-btn" onclick="go('retention',this)">Clients</button>
+    <button class="tab-btn" onclick="go('expenses',this)">Expenses</button>
+    <button class="tab-btn" onclick="go('messages',this)">Messages</button>
+    <button class="tab-btn" onclick="go('reports',this)">Reports</button>
+    <button class="tab-btn" onclick="go('settings',this)">Settings</button>
+  </div>
+
+  <div class="body-row">
+
+  <!-- DESKTOP SIDEBAR (hidden on mobile via CSS) -->
+  <div class="sidebar" id="desktop-sidebar">
+    <button class="sidebar-btn active" id="sb-0" onclick="go('dashboard',null);setSb(0)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button class="sidebar-btn" id="sb-1" onclick="go('orders',null);setSb(1)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+      Orders
+    </button>
+    <button class="sidebar-btn" id="sb-2" onclick="go('calendar',null);setSb(2)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Schedule
+    </button>
+    <button class="sidebar-btn" id="sb-3" onclick="go('retention',null);setSb(3)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Clients
+    </button>
+    <button class="sidebar-btn" id="sb-4" onclick="go('expenses',null);setSb(4)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg>
+      Expenses
+    </button>
+    <button class="sidebar-btn" id="sb-msg" onclick="go('messages',null);setSb(8)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Messages
+    </button>
+    <button class="sidebar-btn" id="sb-6" onclick="go('reports',null);setSb(6)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Reports
+    </button>
+    <button class="sidebar-btn" id="sb-7" onclick="go('settings',null);setSb(7)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </button>
+    <button class="sidebar-add-btn" onclick="go('orders',null);setSb(1)">+ New Order</button>
+  </div>
+
+  <div class="scroll">
+  <div class="main-content">
+
+    <!-- DASHBOARD -->
+    <div class="screen active" id="s-dashboard">
+      <div class="kpi-grid">
+        <div class="kc accent-border">
+          <div class="kl">Today's revenue</div>
+          <div class="kv up" id="d-today">₱0</div>
+          <div class="ks" id="d-today-ct">0 orders</div>
+          <div class="prog"><div class="pf" id="d-prog" style="width:0%"></div></div>
+          <div class="ks" id="d-prog-lbl" style="margin-top:4px;">0% of ₱5,000 target</div>
+        </div>
+        <div class="kc">
+          <div class="kl">Month revenue</div>
+          <div class="kv info" id="d-month">₱0</div>
+          <div class="ks" id="d-month-ct">0 orders</div>
+        </div>
+        <div class="kc">
+          <div class="kl">Avg order</div>
+          <div class="kv up" id="d-avg">₱0</div>
+          <div class="ks">Per transaction</div>
+        </div>
+        <div class="kc">
+          <div class="kl">Net profit</div>
+          <div class="kv warn" id="d-profit">₱0</div>
+          <div class="ks" id="d-profit-sub">After expenses</div>
+        </div>
+        <div class="kc wide">
+          <div class="kl">Top area</div>
+          <div class="kv" style="font-size:17px;" id="d-toparea">—</div>
+          <div class="ks" id="d-toparea-sub">No orders yet</div>
+        </div>
+        <div class="kc wide">
+          <div class="kl">Orders by status</div>
+          <div style="display:flex;gap:12px;margin-top:6px;" id="d-status-row">
+            <span style="font-size:12px;color:var(--accent2);" id="ds-pending">0 Pending</span>
+            <span style="font-size:12px;color:var(--accent3);" id="ds-washing">0 Washing</span>
+            <span style="font-size:12px;color:var(--accent);" id="ds-ready">0 Ready</span>
+            <span style="font-size:12px;color:var(--muted);" id="ds-delivered">0 Delivered</span>
+          </div>
+        </div>
+      </div>
+      <div class="sec">Recent orders</div>
+      <div id="d-recent"></div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="screen" id="s-orders">
+      <div class="sec">New order</div>
+      <div class="field" style="position:relative;">
+        <label>Client name</label>
+        <input id="o-name" placeholder="Search existing or type new name..." autocomplete="off" oninput="searchClients(this.value)" onkeydown="handleClientKey(event)">
+        <div id="client-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface2);border:1px solid var(--accent);border-radius:var(--r-sm);z-index:50;max-height:180px;overflow-y:auto;margin-top:3px;box-shadow:0 4px 16px rgba(0,0,0,.4);"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Phone number</label><input id="o-phone" placeholder="09xx xxx xxxx" type="tel"></div>
+        <div class="field"><label>Area / Barangay</label>
+          <select id="o-area" onchange="checkOther(this)">
+            <option value="">Select barangay</option>
+            <option>South (Poblacion)</option>
+            <option>North (Poblacion)</option>
+            <option>East (Poblacion)</option>
+            <option>West (Poblacion)</option>
+            <option>Alta Vista</option>
+            <option>Cagbuhangin</option>
+            <option>Camp Downes</option>
+            <option>Cogon Combado</option>
+            <option>Ipil</option>
+            <option>Naungan</option>
+            <option>Patag</option>
+            <option>San Juan</option>
+            <option>Other</option>
+          </select>
+          <input type="text" id="o-area-other" placeholder="Type barangay name..." style="margin-top:8px;display:none;width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+        </div>
+      </div>
+      <div class="field">
+        <label>Landmark / Address</label>
+        <input id="o-landmark" placeholder="e.g. Beside Jollibee, near Ormoc Plaza, OSCO compound..." autocomplete="off">
+      </div>
+      <div id="service-fields" class="row3"></div>
+      <div class="row2">
+        <div class="field"><label>Rush order?</label>
+          <select id="o-rush" onchange="calc();suggestReady()">
+            <option value="no">No</option><option value="yes">Yes (+₱50)</option>
+          </select>
+        </div>
+        <div class="field"><label>Payment</label>
+          <select id="o-pay">
+            <option>GCash</option>
+            <option>Maya</option>
+            <option>GoTyme</option>
+            <option>Bank Transfer</option>
+            <option>Cash</option>
+            <option>Unpaid</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Order type</label>
+        <div style="display:flex;gap:8px;margin-top:2px;">
+          <button type="button" id="type-pickup" class="type-btn active" onclick="setOrderType('pickup')">
+            <span style="font-size:14px;">🛵</span> Pickup & Deliver
+          </button>
+          <button type="button" id="type-dropoff" class="type-btn" onclick="setOrderType('dropoff')">
+            <span style="font-size:14px;">🧺</span> Drop-off / Walk-in
+          </button>
+        </div>
+      </div>
+      <div class="field">
+        <label id="lbl-time1">Pickup date & time</label>
+        <div class="row2" style="margin-top:0;">
+          <input type="date" id="o-pickup-date" oninput="suggestReady()">
+          <input type="time" id="o-pickup-time" value="09:00" oninput="suggestReady()">
+        </div>
+      </div>
+      <div class="field">
+        <label id="lbl-time2">Est. ready date & time</label>
+        <div class="row2" style="margin-top:0;">
+          <input type="date" id="o-delivery-date">
+          <input type="time" id="o-delivery-time" value="09:00">
+        </div>
+        <div id="tat-hint" style="font-size:10px;color:var(--accent2);margin-top:5px;">Regular: 24-48 hrs TAT</div>
+      </div>
+      <div class="field"><label>Special instructions</label><textarea id="o-notes" placeholder="e.g. Use unscented detergent, fold shirts only, separate whites..."></textarea></div>
+      <div class="field">
+        <label>Referred by <span id="referral-badge" style="display:none;font-size:10px;background:#7fd6a020;color:var(--accent);padding:2px 8px;border-radius:10px;font-weight:600;margin-left:6px;">-&#8369;20 VIP referral</span></label>
+        <select id="o-referrer" onchange="checkReferral(this)" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+          <option value="">No referral</option>
+        </select>
+      </div>
+      <div class="calc-box">
+        <div class="kl">Total amount</div>
+        <div class="kv up" id="calc-total">₱0</div>
+        <div class="ks" id="calc-break">Enter kg above to calculate</div>
+      </div>
+      <button class="btn" onclick="saveOrder()">Save order</button>
+
+      <div class="sec" style="margin-top:20px;">All orders</div>
+      <div class="ftabs">
+        <button class="ftab on" onclick="filterOrders('all',this)">All</button>
+        <button class="ftab" onclick="filterOrders('pending',this)">Pending</button>
+        <button class="ftab" onclick="filterOrders('washing',this)">Washing</button>
+        <button class="ftab" onclick="filterOrders('ready',this)">Ready</button>
+        <button class="ftab" onclick="filterOrders('delivered',this)">Delivered</button>
+        <button class="ftab" onclick="filterOrders('pickup',this)">🛵 Pickup</button>
+        <button class="ftab" onclick="filterOrders('dropoff',this)">🧺 Drop-off</button>
+      </div>
+      <div id="orders-list"></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="screen" id="s-calendar">
+
+      <!-- Top KPI strip -->
+      <div class="kpi-grid" id="sched-kpis">
+        <div class="kc">
+          <div class="kl">Pickups today</div>
+          <div class="kv up" id="sched-pickups">0</div>
+          <div class="ks">To collect</div>
+        </div>
+        <div class="kc">
+          <div class="kl">Deliveries today</div>
+          <div class="kv info" id="sched-deliveries">0</div>
+          <div class="ks">To deliver back</div>
+        </div>
+        <div class="kc wide" id="sched-overdue-card" style="display:none;border-color:var(--danger);">
+          <div class="kl" style="color:var(--danger);">Overdue orders</div>
+          <div class="kv red" id="sched-overdue">0</div>
+          <div class="ks" id="sched-overdue-names">Past est. ready time, not yet delivered</div>
+        </div>
+      </div>
+
+      <!-- Calendar grid -->
+      <div class="card" style="margin-bottom:12px;">
+        <div class="cal-header">
+          <button class="cal-nav" onclick="calNav(-1)">‹</button>
+          <div class="cal-title" id="cal-title"></div>
+          <button class="cal-nav" onclick="calNav(1)">›</button>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-day-label">Su</div><div class="cal-day-label">Mo</div>
+          <div class="cal-day-label">Tu</div><div class="cal-day-label">We</div>
+          <div class="cal-day-label">Th</div><div class="cal-day-label">Fr</div>
+          <div class="cal-day-label">Sa</div>
+          <div id="cal-cells"></div>
+        </div>
+      </div>
+
+      <!-- Selected day schedule -->
+      <div class="sec" id="cal-day-title">Today's schedule</div>
+      <div id="cal-orders"></div>
+
+    </div>
+    <!-- CLIENTS / RETENTION -->
+    <div class="screen" id="s-retention">
+      <div class="kpi-grid">
+        <div class="kc">
+          <div class="kl">Follow-up needed</div>
+          <div class="kv warn" id="r-followup">0</div>
+          <div class="ks">14+ days inactive</div>
+        </div>
+        <div class="kc">
+          <div class="kl">Total clients</div>
+          <div class="kv up" id="r-total">0</div>
+          <div class="ks">Unique names</div>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <input id="client-search" placeholder="Search clients by name or area..." autocomplete="off" oninput="searchClientFilter(this.value)" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+      </div>
+      <div class="ftabs">
+        <button class="ftab on" onclick="filterClients('all',this)">All clients</button>
+        <button class="ftab" onclick="filterClients('followup',this)">Follow-up</button>
+        <button class="ftab" onclick="filterClients('vip',this)">VIP</button>
+      </div>
+      <div id="ret-list"></div>
+
+      <div class="sec" style="margin-top:20px;">VIP clients</div>
+      <div id="vip-section"></div>
+
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="screen" id="s-expenses">
+      <div class="kpi-grid">
+        <div class="kc">
+          <div class="kl">Total expenses</div>
+          <div class="kv red" id="e-total">₱0</div>
+          <div class="ks" id="e-ct">0 entries</div>
+        </div>
+        <div class="kc">
+          <div class="kl">Net profit</div>
+          <div class="kv up" id="e-profit">₱0</div>
+          <div class="ks">Revenue minus costs</div>
+        </div>
+      </div>
+      <div class="sec">Log expense</div>
+      <div class="row2">
+        <div class="field"><label>Item</label><input id="exp-item" placeholder="e.g. Detergent"></div>
+        <div class="field"><label>Amount (₱)</label><input type="number" id="exp-amt" placeholder="0"></div>
+      </div>
+      <div class="field"><label>Category</label>
+        <select id="exp-cat">
+          <option>Supplies</option><option>Utilities</option><option>Delivery</option>
+          <option>Staff wages</option><option>Equipment</option><option>Other</option>
+        </select>
+      </div>
+      <button class="btn" onclick="addExpense()">Log expense</button>
+      <div class="sec" style="margin-top:20px;">Expense log</div>
+      <div class="card" id="exp-list"><div class="empty">No expenses logged yet.</div></div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="screen" id="s-messages">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div class="sec" style="margin:0;">Facebook Inbox</div>
+        <button class="btn-sm" onclick="loadInbox()" id="inbox-refresh-btn">Refresh</button>
+      </div>
+      <div id="inbox-status" style="font-size:12px;color:var(--muted);margin-bottom:10px;"></div>
+      <div id="inbox-list"></div>
+
+      <!-- Conversation thread (hidden until tapped) -->
+      <div id="convo-view" style="display:none;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <button onclick="closeConvo()" style="background:none;border:none;color:var(--accent);font-size:14px;cursor:pointer;padding:0;">&#8592; Back</button>
+          <div id="convo-name" style="font-weight:600;font-size:15px;"></div>
+        </div>
+        <div id="convo-messages" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;max-height:50vh;overflow-y:auto;"></div>
+        <div style="display:flex;gap:8px;">
+          <input id="reply-input" placeholder="Type a reply..." style="flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+          <button class="btn" style="width:80px;" onclick="sendReply()">Send</button>
+        </div>
+        <div id="reply-status" style="font-size:11px;color:var(--muted);margin-top:6px;"></div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="screen" id="s-reports">
+
+      <!-- Period selector -->
+      <div class="ftabs" style="margin-bottom:14px;">
+        <button class="ftab on" onclick="setReportPeriod('week',this)">This week</button>
+        <button class="ftab" onclick="setReportPeriod('month',this)">This month</button>
+        <button class="ftab" onclick="setReportPeriod('last_month',this)">Last month</button>
+        <button class="ftab" onclick="setReportPeriod('quarter',this)">Quarter</button>
+        <button class="ftab" onclick="setReportPeriod('all',this)">All time</button>
+      </div>
+
+      <!-- Summary KPIs -->
+      <div class="kpi-grid" id="rep-kpis">
+        <div class="kc accent-border">
+          <div class="kl">Revenue</div>
+          <div class="kv up" id="rep-revenue">&#8369;0</div>
+          <div class="ks" id="rep-orders">0 orders</div>
+        </div>
+        <div class="kc">
+          <div class="kl">Expenses</div>
+          <div class="kv red" id="rep-expenses">&#8369;0</div>
+          <div class="ks" id="rep-exp-ct">0 entries</div>
+        </div>
+        <div class="kc">
+          <div class="kl">Net profit</div>
+          <div class="kv warn" id="rep-profit">&#8369;0</div>
+          <div class="ks" id="rep-margin">0% margin</div>
+        </div>
+        <div class="kc">
+          <div class="kl">Avg order value</div>
+          <div class="kv info" id="rep-avg">&#8369;0</div>
+          <div class="ks">Per transaction</div>
+        </div>
+      </div>
+
+      <!-- Revenue by week/day chart -->
+      <div class="sec">Revenue breakdown</div>
+      <div class="card" id="rep-chart-wrap">
+        <div id="rep-bars" style="display:flex;align-items:flex-end;gap:3px;height:110px;padding:4px 4px 0;border-bottom:1px solid var(--border);"></div>
+        <div id="rep-bar-labels" style="display:flex;gap:4px;padding:4px 4px 0;"></div>
+      </div>
+
+      <!-- Top areas -->
+      <div class="sec">Top areas</div>
+      <div class="card" id="rep-areas"></div>
+
+      <!-- Expense breakdown -->
+      <div class="sec">Expenses by category</div>
+      <div class="card" id="rep-exp-cats"></div>
+
+      <!-- Top clients -->
+      <div class="sec">Top clients</div>
+      <div class="card" id="rep-clients"></div>
+
+      <!-- Payment method breakdown -->
+      <div class="sec">Payment methods</div>
+      <div class="card" id="rep-payments"></div>
+
+    </div>
+
+        <div class="screen" id="s-settings">
+
+      <div class="sec">Appearance</div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:13px;font-weight:500;">Theme</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Switch between dark and light mode</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button id="theme-dark" class="type-btn active" onclick="setTheme('dark')" style="width:80px;padding:8px;">🌙 Dark</button>
+            <button id="theme-light" class="type-btn" onclick="setTheme('light')" style="width:80px;padding:8px;">☀️ Light</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec">Services</div>
+      <div class="card" id="services-list" style="margin-bottom:10px;"></div>
+      <button class="btn-ghost" style="margin-bottom:14px;" onclick="openAddServiceModal()">+ Add new service</button>
+
+      <div class="sec">Pricing rules</div>
+      <div class="card">
+        <div class="field"><label>Clothes — base load (kg)</label><input type="number" id="st-clothes-kg" placeholder="7" step="0.5"></div>
+        <div class="field"><label>Clothes — base price (₱)</label><input type="number" id="st-clothes-price" placeholder="159"></div>
+        <div class="field"><label>Clothes — excess per kg (₱)</label><input type="number" id="st-clothes-excess" placeholder="25"></div>
+        <div style="height:1px;background:var(--border);margin:4px 0 12px;"></div>
+        <div class="field"><label>Sheets — base load (kg)</label><input type="number" id="st-sheets-kg" placeholder="5" step="0.5"></div>
+        <div class="field"><label>Sheets — base price (₱)</label><input type="number" id="st-sheets-price" placeholder="159"></div>
+        <div class="field"><label>Sheets — excess per kg (₱)</label><input type="number" id="st-sheets-excess" placeholder="35"></div>
+        <div style="height:1px;background:var(--border);margin:4px 0 12px;"></div>
+        <div class="field"><label>Comforter — price per piece (₱)</label><input type="number" id="st-comforter-price" placeholder="159"></div>
+        <div class="field"><label>Rush fee (₱)</label><input type="number" id="st-rush-fee" placeholder="50"></div>
+        <button class="btn" onclick="savePricing()">Save pricing</button>
+      </div>
+
+      <div class="sec">Business settings</div>
+      <div class="card">
+        <div class="field"><label>Business name</label><input type="text" id="st-biz-name" placeholder="LabaLuxe"></div>
+        <div class="field"><label>Daily revenue target (₱)</label><input type="number" id="st-daily-target" placeholder="5000"></div>
+        <button class="btn" onclick="saveBizSettings()">Save settings</button>
+      </div>
+
+      <div class="sec">Service areas</div>
+      <div class="card">
+        <div id="st-areas-list" style="margin-bottom:12px;"></div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="st-new-area" placeholder="Add barangay..." style="flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+          <button class="btn-sm" onclick="addArea()" style="white-space:nowrap;">Add</button>
+        </div>
+      </div>
+
+      <div class="sec">Current pricing</div>
+      <div class="card" id="st-pricing-summary"></div>
+
+      <div class="sec">Export & backup</div>
+      <div class="card">
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <button class="btn" onclick="exportCSV('orders')">Export orders as CSV</button>
+          <button class="btn" style="background:var(--accent2);color:#0a0a0f;" onclick="exportCSV('expenses')">Export expenses as CSV</button>
+          <button class="btn" style="background:var(--accent3);color:#0a0a0f;" onclick="exportPrintReport()">Export report (bank proof)</button>
+          <button class="btn-ghost" onclick="exportBackup()">Backup all data (JSON)</button>
+        </div>
+      </div>
+      <div class="sec">Restore backup</div>
+      <div class="card">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:10px;">Upload a previously exported JSON backup to restore your data.</div>
+        <label style="display:block;background:var(--surface2);border:1px dashed var(--border2);border-radius:var(--r-sm);padding:14px;text-align:center;cursor:pointer;font-size:13px;color:var(--muted);">
+          Tap to select backup file
+          <input type="file" id="restore-file" accept=".json" style="display:none;" onchange="importBackup(this)">
+        </label>
+        <div id="restore-status" style="font-size:12px;margin-top:8px;color:var(--accent);"></div>
+      </div>
+      <div class="sec">VIP program</div>
+      <div class="card">
+        <div class="row2">
+          <div class="field"><label>Orders to qualify</label><input type="number" id="st-vip-threshold" placeholder="5" min="1"></div>
+          <div class="field"><label>Locked base rate (&#8369;)</label><input type="number" id="st-vip-rate" placeholder="159"></div>
+        </div>
+        <div class="field"><label>Referral reward (&#8369;)</label><input type="number" id="st-vip-referral" placeholder="20"></div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+          <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
+            <input type="checkbox" id="st-vip-priority" checked style="width:16px;height:16px;accent-color:var(--accent);">
+            Priority processing for VIP orders
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;">
+            <input type="checkbox" id="st-vip-freerush" checked style="width:16px;height:16px;accent-color:var(--accent);">
+            Free rush once a month for VIP clients
+          </label>
+        </div>
+        <button class="btn" onclick="saveVIPSettings()">Save VIP settings</button>
+      </div>
+
+    </div>
+
+  </div><!-- end main-content -->
+  </div><!-- end scroll -->
+  </div><!-- end body-row -->
+
+  <button class="fab" id="main-fab" onclick="go('orders',document.querySelectorAll('.tab-btn')[1])">
+    <svg width="22" height="22" fill="none" stroke="#0a0a0f" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+
+  <div class="bnav">
+    <button class="bn active" id="bn0" onclick="go('dashboard',document.querySelectorAll('.tab-btn')[0]);setbn(0)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Home
+    </button>
+    <button class="bn" id="bn1" onclick="go('orders',document.querySelectorAll('.tab-btn')[1]);setbn(1)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+      Orders
+    </button>
+    <button class="bn" id="bn2" onclick="go('calendar',document.querySelectorAll('.tab-btn')[2]);setbn(2)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Schedule
+    </button>
+    <button class="bn" id="bn3" onclick="go('retention',document.querySelectorAll('.tab-btn')[3]);setbn(3)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Clients
+    </button>
+    <button class="bn" id="bn4" onclick="go('messages',document.querySelectorAll('.tab-btn')[5]);setbn(4)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Messages
+    </button>
+    <button class="bn" id="bn4b" onclick="go('reports',document.querySelectorAll('.tab-btn')[6]);setbn(5)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Reports
+    </button>
+    <button class="bn" id="bn5" onclick="go('settings',document.querySelectorAll('.tab-btn')[6]);setbn(5)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </button>
+  </div>
+
+  <!-- ORDER DETAIL
+
+  <!-- ORDER DETAIL MODAL -->
+  <div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+    <div class="modal" id="modal-content">
+      <div class="modal-handle"></div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- CLIENT HISTORY MODAL -->
+  <div class="modal-bg" id="client-modal-bg" onclick="closeClientModal(event)">
+    <div class="modal" id="client-modal-content">
+      <div class="modal-handle"></div>
+      <div id="client-modal-body"></div>
+    </div>
+  </div>
+  <!-- SERVICE MODAL -->
+  <div class="modal-bg" id="service-modal-bg" onclick="closeServiceModal(event)">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="service-modal-title">Add service</div>
+      <div class="field"><label>Service name</label><input id="svc-name" placeholder="e.g. Dry cleaning, Shoe cleaning..."></div>
+      <div class="field"><label>Pricing type</label>
+        <select id="svc-type" onchange="toggleServiceFields(this.value)" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+          <option value="kg">Per kg (with base load)</option>
+          <option value="piece">Per piece (fixed price)</option>
+          <option value="fixed">Fixed price per order</option>
+        </select>
+      </div>
+      <div id="svc-kg-fields">
+        <div class="row2">
+          <div class="field"><label>Base load (kg)</label><input type="number" id="svc-base-kg" placeholder="e.g. 7" step="0.5"></div>
+          <div class="field"><label>Base price (&#8369;)</label><input type="number" id="svc-base-price" placeholder="e.g. 159"></div>
+        </div>
+        <div class="field"><label>Excess per kg (&#8369;)</label><input type="number" id="svc-excess" placeholder="e.g. 25"></div>
+      </div>
+      <div id="svc-piece-fields" style="display:none;">
+        <div class="field"><label>Price per piece (&#8369;)</label><input type="number" id="svc-piece-price" placeholder="e.g. 159"></div>
+      </div>
+      <div id="svc-fixed-fields" style="display:none;">
+        <div class="field"><label>Fixed price (&#8369;)</label><input type="number" id="svc-fixed-price" placeholder="e.g. 300"></div>
+      </div>
+      <button class="btn" onclick="saveService()">Save service</button>
+      <button class="btn-ghost" onclick="closeServiceModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- CREDIT MODAL -->
+  <div class="modal-bg" id="credit-modal-bg" onclick="closeCreditModal(event)">
+    <div class="modal" id="credit-modal-content">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Add credit for <span id="credit-client-name"></span></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;">Current balance: <strong id="credit-current-bal" style="color:var(--accent);">&#8369;0</strong></div>
+      <div class="field"><label>Amount (&#8369;)</label><input type="number" id="credit-amount" placeholder="e.g. 50" min="1"></div>
+      <div class="field"><label>Reason</label><input type="text" id="credit-reason" placeholder="e.g. Goodwill, complaint resolution, birthday..."></div>
+      <button class="btn" onclick="saveManualCredit()">Add credit</button>
+      <button class="btn-ghost" onclick="closeCreditModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- EDIT ORDER MODAL -->
+  <div class="modal-bg" id="edit-modal-bg" onclick="closeEditModal(event)">
+    <div class="modal" id="edit-modal-content">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Edit order</div>
+      <div class="field"><label>Client name</label><input id="edit-name" autocomplete="off"></div>
+      <div class="row2">
+        <div class="field"><label>Phone</label><input id="edit-phone" type="tel"></div>
+        <div class="field"><label>Area</label>
+          <select id="edit-area" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;"></select>
+        </div>
+      </div>
+      <div class="field"><label>Landmark</label><input id="edit-landmark"></div>
+      <div class="row3">
+        <div class="field"><label>Clothes kg</label><input type="number" id="edit-c" min="0" step="0.5" oninput="calcEdit()"></div>
+        <div class="field"><label>Sheets kg</label><input type="number" id="edit-s" min="0" step="0.5" oninput="calcEdit()"></div>
+        <div class="field"><label>Comforter</label><input type="number" id="edit-com" min="0" oninput="calcEdit()"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Rush?</label>
+          <select id="edit-rush" onchange="calcEdit()" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+            <option value="no">No</option>
+            <option value="yes">Yes (+&#8369;50)</option>
+          </select>
+        </div>
+        <div class="field"><label>Payment</label>
+          <select id="edit-pay" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
+            <option>GCash</option>
+            <option>Maya</option>
+            <option>GoTyme</option>
+            <option>Bank Transfer</option>
+            <option>Cash</option>
+            <option>Unpaid</option>
+            <option>Paid</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Special instructions</label>
+        <textarea id="edit-notes" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;resize:none;height:72px;"></textarea>
+      </div>
+      <div class="calc-box" style="margin-bottom:14px;">
+        <div class="kl">Updated total</div>
+        <div class="kv up" id="edit-total">&#8369;0</div>
+        <div class="ks" id="edit-break">-</div>
+      </div>
+      <button class="btn" onclick="saveEdit()">Save changes</button>
+      <button class="btn-ghost" onclick="closeEditModal()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <button id="logout-btn" onclick="doLogout()" style="display:none;position:fixed;top:16px;right:16px;background:none;border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-size:11px;padding:4px 10px;cursor:pointer;z-index:999;">Logout</button>
+</div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script>
+
+// ── FIREBASE INIT ─────────────────────────────────────────────
+var db, auth;
+var TENANT = 'labaluxe';
+var BASE = function(){ return db.collection('tenants').doc(TENANT); };
+
+function initFirebase(){
+  try {
+    var firebaseConfig = {
+      apiKey: "AIzaSyBVtbP82VFrKkRyiFBPTpWRlhR-GhWMVWo",
+      authDomain: "cortex-os-labaluxe.firebaseapp.com",
+      projectId: "cortex-os-labaluxe",
+      storageBucket: "cortex-os-labaluxe.firebasestorage.app",
+      messagingSenderId: "112444951896",
+      appId: "1:112444951896:web:36b95a1403aa0e41bc692d"
+    };
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    db   = firebase.firestore();
+    auth = firebase.auth();
+
+    // Auth state listener
+    auth.onAuthStateChanged(function(user){
+      if(user){
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').style.display          = 'block';
+        document.getElementById('logout-btn').style.display   = 'block';
+        initApp();
+      } else {
+        document.getElementById('login-screen').style.display = 'flex';
+        document.getElementById('app').style.display          = 'none';
+        document.getElementById('logout-btn').style.display   = 'none';
+      }
+    });
+  } catch(e) {
+    console.error('Firebase init error:', e);
+    showLoginError('Firebase failed to load: ' + e.message);
+  }
+}
+
+// Remove the old standalone auth.onAuthStateChanged block
+
+
+// ── AUTH ──────────────────────────────────────────────────────
+function doLogin(){
+  var email = document.getElementById('login-email').value.trim();
+  var pass  = document.getElementById('login-password').value;
+  var load  = document.getElementById('login-loading');
+  var err   = document.getElementById('login-error');
+
+  if(!email || !pass){ showLoginError('Enter email and password'); return; }
+
+  err.style.display  = 'none';
+  load.style.display = 'block';
+  load.textContent   = 'Signing in...';
+
+  // If Firebase not ready yet, wait for it
+  if(!auth){
+    var attempts = 0;
+    var wait = setInterval(function(){
+      attempts++;
+      if(auth){
+        clearInterval(wait);
+        attemptLogin(email, pass);
+      } else if(attempts > 20){
+        clearInterval(wait);
+        load.style.display = 'none';
+        showLoginError('Firebase not loaded. Check internet connection.');
+      }
+    }, 250);
+    return;
+  }
+  attemptLogin(email, pass);
+}
+
+function attemptLogin(email, pass){
+  var load = document.getElementById('login-loading');
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(function(){
+      load.style.display = 'none';
+    })
+    .catch(function(e){
+      load.style.display = 'none';
+      if(e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential'){
+        showLoginError('Incorrect email or password');
+      } else if(e.code === 'auth/invalid-email'){
+        showLoginError('Invalid email address');
+      } else if(e.code === 'auth/network-request-failed'){
+        showLoginError('No internet connection');
+      } else {
+        showLoginError(e.message || 'Login failed');
+      }
+    });
+}
+
+function doLogout(){
+  auth.signOut();
+}
+
+function showLoginError(msg){
+  var el = document.getElementById('login-error');
+  if(el){ el.textContent = msg; el.style.display = 'block'; }
+}
+
+// Auth listener handled in initFirebase()
+
+// ── FIRESTORE HELPERS ─────────────────────────────────────────
+function fsLoad(collection, callback){
+  BASE().collection(collection).get().then(function(snap){
+    var data = [];
+    snap.forEach(function(doc){ data.push(Object.assign({fsId: doc.id}, doc.data())); });
+    callback(data);
+  }).catch(function(e){ console.error('fsLoad error:', collection, e); callback([]); });
+}
+
+function fsSave(collection, id, data){
+  return BASE().collection(collection).doc(String(id)).set(data);
+}
+
+function fsDelete(collection, id){
+  return BASE().collection(collection).doc(String(id)).delete();
+}
+
+function fsSaveDoc(docName, data){
+  return BASE().collection('config').doc(docName).set(data);
+}
+
+function fsLoadDoc(docName, callback){
+  BASE().collection('config').doc(docName).get().then(function(doc){
+    callback(doc.exists ? doc.data() : null);
+  }).catch(function(){ callback(null); });
+}
+
+// ── REAL-TIME LISTENERS ───────────────────────────────────────
+var unsubscribers = [];
+
+function startListeners(){
+  // Orders
+  unsubscribers.push(
+    BASE().collection('orders').onSnapshot(function(snap){
+      orders = [];
+      snap.forEach(function(doc){ orders.push(Object.assign({}, doc.data())); });
+      refreshDash(); renderOrders(); renderCal(); renderRetention(); updateTabBadges();
+    })
+  );
+  // Expenses
+  unsubscribers.push(
+    BASE().collection('expenses').onSnapshot(function(snap){
+      expenses = [];
+      snap.forEach(function(doc){ expenses.push(Object.assign({}, doc.data())); });
+      renderExpenses();
+    })
+  );
+  // Tasks
+  unsubscribers.push(
+    BASE().collection('tasks').onSnapshot(function(snap){
+      tasks = [];
+      snap.forEach(function(doc){ tasks.push(Object.assign({}, doc.data())); });
+      renderTasks();
+    })
+  );
+}
+
+function stopListeners(){
+  unsubscribers.forEach(function(u){ u(); });
+  unsubscribers = [];
+}
+
+// ── OVERRIDE SAVE/LOAD ────────────────────────────────────────
+// Replace localStorage save with Firestore
+function save(){
+  // Save all orders
+  var batch = db.batch();
+  orders.forEach(function(o){
+    var ref = BASE().collection('orders').doc(String(o.id));
+    batch.set(ref, o);
+  });
+  batch.commit().catch(function(e){ console.error('Save orders error:', e); });
+
+  // Save VIP clients
+  fsSaveDoc('vipClients', vipClients);
+  fsSaveDoc('pricing', pricing);
+  fsSaveDoc('bizSettings', bizSettings);
+  fsSaveDoc('vipSettings', vipSettings);
+  fsSaveDoc('serviceAreas', {areas: serviceAreas});
+  fsSaveDoc('services', {list: services});
+  fsSaveDoc('credits', clientCredits);
+}
+
+function saveExpense(exp){
+  fsSave('expenses', exp.id || Date.now(), exp);
+}
+
+function deleteExpenseFromFS(id){
+  fsDelete('expenses', id);
+}
+
+function saveTask(task){
+  fsSave('tasks', task.id || Date.now(), task);
+}
+
+function deleteTaskFromFS(id){
+  fsDelete('tasks', id);
+}
+
+function saveCredits(){
+  fsSaveDoc('credits', clientCredits);
+}
+
+function saveServices(){
+  fsSaveDoc('services', {list: services});
+}
+
+function saveRoles(){} // deferred
+
+// ── APP INIT WITH FIRESTORE ───────────────────────────────────
+function initApp(){
+  loadTheme();
+
+  // Load config docs first, then start listeners
+  var loaded = 0;
+  var total  = 6;
+  function checkDone(){ loaded++; if(loaded >= total) onConfigLoaded(); }
+
+  fsLoadDoc('pricing',     function(d){ if(d) pricing      = d; checkDone(); });
+  fsLoadDoc('bizSettings', function(d){ if(d) bizSettings  = d; checkDone(); });
+  fsLoadDoc('vipSettings', function(d){ if(d) vipSettings  = d; checkDone(); });
+  fsLoadDoc('vipClients',  function(d){ if(d) vipClients   = d; checkDone(); });
+  fsLoadDoc('serviceAreas',function(d){ if(d && d.areas) serviceAreas = d.areas; checkDone(); });
+  fsLoadDoc('services',    function(d){ if(d && d.list)  services     = d.list;  checkDone(); });
+}
+
+function onConfigLoaded(){
+  // Load credits
+  fsLoadDoc('credits', function(d){ if(d) clientCredits = d; });
+
+  // Start real-time listeners for orders/expenses/tasks
+  startListeners();
+
+  // Init UI
+  renderCal();
+  refresh();
+  checkNotif();
+  setDefaultPickup();
+  updateAreaDropdown();
+  updateReferrerDropdown();
+  renderServiceFields();
+  renderVIPSection();
+}
+
+
+// STATE
+let orders=[], expenses=[], tasks=[];
+const load = k => { try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch(e){ return null; } };
+// orders/expenses/tasks loaded via Firestore listeners
+
+// SAMPLE DATA - remove when real data is loaded
+var sampleOrders = [
+  {
+    id:1001, name:'Christine', area:'Punta', phone:'09171234567',
+    landmark:'Near Punta Barangay Hall', total:477, pay:'GCash',
+    orderType:'pickup', pickup:'2026-04-01T09:00', delivery:'2026-04-02T09:00',
+    notes:'Use unscented detergent', status:'delivered',
+    date:'Wed Apr 01 2026', dateISO:'2026-04-01', time:'9:00 AM',
+    referredBy:'', referralDiscount:0
+  },
+  {
+    id:1002, name:'Babbette', area:'Cogon Combado', phone:'09181234567',
+    landmark:'Blue gate beside sari-sari store', total:318, pay:'Cash',
+    orderType:'pickup', pickup:'2026-04-01T10:00', delivery:'2026-04-02T10:00',
+    notes:'', status:'ready',
+    date:'Wed Apr 01 2026', dateISO:'2026-04-01', time:'10:00 AM',
+    referredBy:'', referralDiscount:0
+  },
+  {
+    id:1003, name:'Eva', area:'Camp Downes', phone:'09191234567',
+    landmark:'OSCO Compound Gate 2', total:636, pay:'Unpaid',
+    orderType:'pickup', pickup:'2026-04-01T11:00', delivery:'2026-04-02T11:00',
+    notes:'Separate whites please', status:'washing',
+    date:'Wed Apr 01 2026', dateISO:'2026-04-01', time:'11:00 AM',
+    referredBy:'', referralDiscount:0
+  }
+];
+
+var sampleExpenses = [
+  {item:'Detergent (Ariel 2kg)', amt:850, cat:'Supplies', date:'Apr 1'},
+  {item:'Fabric conditioner',    amt:350, cat:'Supplies', date:'Apr 1'},
+  {item:'Rider allowance',       amt:500, cat:'Delivery', date:'Apr 1'}
+];
+
+
+// Pre-load sample data if storage is empty
+if(!orders.length)   orders   = sampleOrders;
+if(!expenses.length) expenses = sampleExpenses;
+
+
+// save() handled by Firebase (see initFirebase)
+
+// SETTINGS & PRICING
+const DEFAULT_PRICING = {
+  clothesKg:7, clothesPrice:159, clothesExcess:25,
+  sheetsKg:5,  sheetsPrice:159,  sheetsExcess:35,
+  comforterPrice:159, rushFee:50
+};
+const DEFAULT_BIZ = { name:'LabaLuxe', dailyTarget:5000 };
+const DEFAULT_VIP = {
+  threshold: 5,
+  lockedRate: 159,
+  priorityProcessing: true,
+  referralReward: 20,
+  freeRushMonthly: true,
+};
+const DEFAULT_AREAS = [
+  'South (Poblacion)','North (Poblacion)','East (Poblacion)','West (Poblacion)',
+  'Alta Vista','Cagbuhangin','Camp Downes','Cogon Combado',
+  'Ipil','Naungan','Patag','San Juan'
+];
+
+let pricing      = load('cx_pricing') || Object.assign({}, DEFAULT_PRICING);
+var vipSettings  = Object.assign({}, DEFAULT_VIP);
+// vipClients: { clientName: { status:'pending'|'active'|'revoked', since:date, referrals:0, freeRushUsed:monthYear } }
+var vipClients   = {};
+let bizSettings  = load('cx_biz')     || Object.assign({}, DEFAULT_BIZ);
+let serviceAreas = load('cx_areas')   || DEFAULT_AREAS.slice();
+
+function savePricing(){
+  pricing = {
+    clothesKg:     parseFloat(document.getElementById('st-clothes-kg').value)     || DEFAULT_PRICING.clothesKg,
+    clothesPrice:  parseFloat(document.getElementById('st-clothes-price').value)  || DEFAULT_PRICING.clothesPrice,
+    clothesExcess: parseFloat(document.getElementById('st-clothes-excess').value) || DEFAULT_PRICING.clothesExcess,
+    sheetsKg:      parseFloat(document.getElementById('st-sheets-kg').value)      || DEFAULT_PRICING.sheetsKg,
+    sheetsPrice:   parseFloat(document.getElementById('st-sheets-price').value)   || DEFAULT_PRICING.sheetsPrice,
+    sheetsExcess:  parseFloat(document.getElementById('st-sheets-excess').value)  || DEFAULT_PRICING.sheetsExcess,
+    comforterPrice:parseFloat(document.getElementById('st-comforter-price').value)|| DEFAULT_PRICING.comforterPrice,
+    rushFee:       parseFloat(document.getElementById('st-rush-fee').value)       || DEFAULT_PRICING.rushFee,
+  };
+  fsSaveDoc('pricing', pricing);
+  renderPricingSummary();
+  toast('Pricing saved!');
+}
+
+function saveBizSettings(){
+  bizSettings = {
+    name:        document.getElementById('st-biz-name').value.trim() || DEFAULT_BIZ.name,
+    dailyTarget: parseFloat(document.getElementById('st-daily-target').value) || DEFAULT_BIZ.dailyTarget,
+  };
+  fsSaveDoc('bizSettings', bizSettings);
+  refreshDash();
+  toast('Settings saved!');
+}
+
+function addArea(){
+  var val = document.getElementById('st-new-area').value.trim();
+  if(!val){ toast('Enter a barangay name'); return; }
+  if(serviceAreas.indexOf(val) >= 0){ toast('Already in list'); return; }
+  serviceAreas.push(val);
+  fsSaveDoc('serviceAreas', {areas: serviceAreas});
+  document.getElementById('st-new-area').value = '';
+  renderAreasList();
+  updateAreaDropdown();
+  toast(val + ' added!');
+}
+
+function removeArea(name){
+  serviceAreas = serviceAreas.filter(function(a){ return a !== name; });
+  fsSaveDoc('serviceAreas', {areas: serviceAreas});
+  renderAreasList();
+  updateAreaDropdown();
+  toast(name + ' removed');
+}
+
+function updateAreaDropdown(){
+  var sel = document.getElementById('o-area');
+  if(!sel) return;
+  var current = sel.value;
+  var opts = '<option value="">Select barangay</option>\n';
+  serviceAreas.forEach(function(a){
+    opts += '<option' + (a === current ? ' selected' : '') + '>' + a + '</option>\n';
+  });
+  opts += '<option>Other</option>';
+  sel.innerHTML = opts;
+}
+
+function renderAreasList(){
+  var el = document.getElementById('st-areas-list');
+  if(!el) return;
+  if(!serviceAreas.length){ el.innerHTML = '<div class="empty">No areas added yet.</div>'; return; }
+  var html = '';
+  serviceAreas.forEach(function(a){
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">'
+          + '<span style="font-size:13px;">' + a + '</span>'
+          + '<button class="btn-danger" onclick="removeArea(\'' + a + '\')">x</button>'
+          + '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function renderPricingSummary(){
+  var el = document.getElementById('st-pricing-summary');
+  if(!el) return;
+  el.innerHTML = '<div style="display:flex;flex-direction:column;gap:7px;font-size:13px;">'
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Clothes</span><span>&#8369;' + pricing.clothesPrice + ' / ' + pricing.clothesKg + 'kg &middot; +&#8369;' + pricing.clothesExcess + '/kg excess</span></div>'
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Sheets</span><span>&#8369;' + pricing.sheetsPrice + ' / ' + pricing.sheetsKg + 'kg &middot; +&#8369;' + pricing.sheetsExcess + '/kg excess</span></div>'
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Comforter</span><span>&#8369;' + pricing.comforterPrice + ' / piece</span></div>'
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Rush fee</span><span>+&#8369;' + pricing.rushFee + '</span></div>'
+    + '<div style="height:1px;background:var(--border);"></div>'
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Daily target</span><span style="color:var(--accent);">&#8369;' + bizSettings.dailyTarget.toLocaleString() + '</span></div>'
+    + '</div>';
+}
+
+function loadSettingsForm(){
+  document.getElementById('st-clothes-kg').value     = pricing.clothesKg;
+  document.getElementById('st-clothes-price').value  = pricing.clothesPrice;
+  document.getElementById('st-clothes-excess').value = pricing.clothesExcess;
+  document.getElementById('st-sheets-kg').value      = pricing.sheetsKg;
+  document.getElementById('st-sheets-price').value   = pricing.sheetsPrice;
+  document.getElementById('st-sheets-excess').value  = pricing.sheetsExcess;
+  document.getElementById('st-comforter-price').value= pricing.comforterPrice;
+  document.getElementById('st-rush-fee').value       = pricing.rushFee;
+  document.getElementById('st-biz-name').value       = bizSettings.name;
+  document.getElementById('st-daily-target').value   = bizSettings.dailyTarget;
+  renderAreasList();
+  renderPricingSummary();
+  renderServicesList();
+  // Sync theme buttons
+  var savedTheme = load('cx_theme') || 'dark';
+  var darkBtn  = document.getElementById('theme-dark');
+  var lightBtn = document.getElementById('theme-light');
+  if(darkBtn)  darkBtn.classList.toggle('active',  savedTheme === 'dark');
+  if(lightBtn) lightBtn.classList.toggle('active', savedTheme === 'light');
+  // VIP settings
+  var vt = document.getElementById('st-vip-threshold');
+  var vr = document.getElementById('st-vip-rate');
+  var vref = document.getElementById('st-vip-referral');
+  var vp = document.getElementById('st-vip-priority');
+  var vfr = document.getElementById('st-vip-freerush');
+  if(vt)   vt.value   = vipSettings.threshold;
+  if(vr)   vr.value   = vipSettings.lockedRate;
+  if(vref) vref.value = vipSettings.referralReward;
+  if(vp)   vp.checked = vipSettings.priorityProcessing;
+  if(vfr)  vfr.checked= vipSettings.freeRushMonthly;
+}
+
+// VIP SYSTEM
+function getClientOrderCount(name){
+  return orders.filter(function(o){ return o.name === name; }).length;
+}
+
+function isVIP(name){
+  return vipClients[name] && vipClients[name].status === 'active';
+}
+
+function getPendingVIPs(){
+  var confirmed = Object.keys(vipClients);
+  var counts = {};
+  orders.forEach(function(o){ counts[o.name] = (counts[o.name]||0)+1; });
+  return Object.keys(counts).filter(function(name){
+    return counts[name] >= vipSettings.threshold
+        && (!vipClients[name] || vipClients[name].status === 'revoked');
+  });
+}
+
+function approveVIP(name){
+  vipClients[name] = { status:'active', since: new Date().toISOString().slice(0,10), referrals:0, freeRushUsed:'' };
+  if(!clientCredits[name]) clientCredits[name] = [];
+  save(); saveCredits(); renderRetention(); renderVIPSection(); checkNotif();
+  toast(name + ' is now VIP!');
+}
+
+function revokeVIP(name){
+  if(vipClients[name]) vipClients[name].status = 'revoked';
+  save(); renderRetention(); renderVIPSection(); checkNotif();
+  toast(name + ' VIP revoked');
+}
+
+function addReferral(name){
+  if(!vipClients[name]) return;
+  vipClients[name].referrals = (vipClients[name].referrals || 0) + 1;
+  save(); renderVIPSection();
+  toast('Referral recorded for ' + name + '!');
+}
+
+function useFreeRush(name){
+  if(!vipClients[name]) return;
+  var now2 = new Date();
+  var monthKey = now2.getFullYear() + '-' + String(now2.getMonth()+1).padStart(2,'0');
+  vipClients[name].freeRushUsed = monthKey;
+  save(); renderVIPSection();
+  toast('Free rush used for ' + name + ' this month');
+}
+
+function canUseFreeRush(name){
+  if(!isVIP(name) || !vipSettings.freeRushMonthly) return false;
+  var now2 = new Date();
+  var monthKey = now2.getFullYear() + '-' + String(now2.getMonth()+1).padStart(2,'0');
+  return !vipClients[name] || vipClients[name].freeRushUsed !== monthKey;
+}
+
+function getVIPPrice(name){
+  if(isVIP(name)) return vipSettings.lockedRate;
+  return pricing.clothesPrice;
+}
+
+function renderVIPSection(){
+  var el = document.getElementById('vip-section');
+  if(!el) return;
+  var pending = getPendingVIPs();
+  var active  = Object.keys(vipClients).filter(function(n){ return vipClients[n].status === 'active'; });
+  var html = '';
+
+  if(pending.length){
+    html += '<div class="sec" style="margin-top:0;">Pending approval (' + pending.length + ')</div>';
+    pending.forEach(function(name){
+      var cnt = getClientOrderCount(name);
+      html += '<div class="card" style="border-color:var(--accent2);">'
+        + '<div class="card-row">'
+        + '<div><div class="cname">' + name + '</div>'
+        + '<div class="cmeta">' + cnt + ' orders &mdash; qualifies for VIP</div></div>'
+        + '<button class="btn-sm" data-action="approve" data-name="' + name + '">Approve VIP</button>'
+        + '</div></div>';
+    });
+  }
+
+  if(active.length){
+    html += '<div class="sec">Active VIPs (' + active.length + ')</div>';
+    active.forEach(function(name){
+      var v = vipClients[name];
+      var cnt = getClientOrderCount(name);
+      var freeRush = canUseFreeRush(name);
+      html += '<div class="card">'
+        + '<div class="card-row">'
+        + '<div>'
+        + '<div class="cname">' + name + ' <span style="font-size:10px;background:#f0a86422;color:var(--accent2);padding:2px 8px;border-radius:10px;font-weight:700;">VIP</span></div>'
+        + '<div class="cmeta">' + cnt + ' orders &middot; since ' + v.since + '</div>'
+        + '<div class="cmeta">Referrals: <strong style="color:var(--text);">' + (v.referrals||0) + '</strong> &middot; Credits: <strong style="color:var(--accent);">₱' + getAvailableCredit(name) + ' available</strong>'
+        + ' &middot; Locked rate: <strong style="color:var(--accent);">₱' + vipSettings.lockedRate + '</strong>'
+        + ' &middot; Free rush: <strong style="color:' + (freeRush?'var(--accent)':'var(--muted)') + ';">' + (freeRush?'Available':'Used this month') + '</strong></div>'
+        + '</div></div>'
+        + '<div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;">'
+        + '<button class="btn-sm" data-action="referral" data-name="' + name + '">+Referral</button>'
+        + (freeRush ? '<button class="btn-sm" style="background:var(--accent3);color:#0a0a0f;" data-action="freerush" data-name="' + name + '">Free rush</button>' : '')
+        + '<button class="btn-sm-ghost" style="color:var(--danger);border-color:rgba(240,112,112,0.2);" data-action="revoke" data-name="' + name + '">Revoke</button>'
+        + '</div></div>';
+    });
+  }
+
+  if(!pending.length && !active.length){
+    html = '<div class="empty">No VIP clients yet. Clients qualify after ' + vipSettings.threshold + ' orders.</div>';
+  }
+
+  el.innerHTML = html;
+
+  // Attach event listeners via data attributes (no quote escaping needed)
+  el.querySelectorAll('[data-action]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var action = this.getAttribute('data-action');
+      var name   = this.getAttribute('data-name');
+      if(action === 'approve')  approveVIP(name);
+      if(action === 'referral') addReferral(name);
+      if(action === 'freerush') useFreeRush(name);
+      if(action === 'revoke')   revokeVIP(name);
+    });
+  });
+}
+
+function saveVIPSettings(){
+  vipSettings.threshold       = parseInt(document.getElementById('st-vip-threshold').value)   || 5;
+  vipSettings.lockedRate      = parseFloat(document.getElementById('st-vip-rate').value)       || 159;
+  vipSettings.referralReward  = parseFloat(document.getElementById('st-vip-referral').value)   || 20;
+  vipSettings.priorityProcessing = document.getElementById('st-vip-priority').checked;
+  vipSettings.freeRushMonthly    = document.getElementById('st-vip-freerush').checked;
+  fsSaveDoc('vipSettings', vipSettings);
+  renderVIPSection();
+  toast('VIP settings saved!');
+}
+
+// Override checkNotif to include pending VIPs
+function checkNotif(){
+  var clients = buildClients();
+  var needFollowUp = clients.filter(function(cl){ return cl.days >= 14; }).length;
+  var pendingVIP   = getPendingVIPs().length;
+  document.getElementById('notifDot').classList.toggle('on', needFollowUp > 0 || pendingVIP > 0);
+}
+
+// ORDER TYPE
+
+var currentOrderType = 'pickup';
+function setOrderType(type){
+  currentOrderType = type;
+  document.querySelectorAll('.type-btn').forEach(function(b){ b.classList.remove('active'); });
+  var btn = document.getElementById('type-' + type);
+  if(btn) btn.classList.add('active');
+  var lmField = document.getElementById('o-landmark');
+  if(lmField) lmField.parentElement.style.opacity = type === 'dropoff' ? '0.4' : '1';
+  var isDropoff = type === 'dropoff';
+  var l1 = document.getElementById('lbl-time1');
+  var l2 = document.getElementById('lbl-time2');
+  if(l1) l1.textContent = isDropoff ? 'Drop-off date & time' : 'Pickup date & time';
+  if(l2) l2.textContent = 'Est. ready date & time';
+}
+
+// OTHER BRGY
+function checkOther(sel){
+  var other = document.getElementById('o-area-other');
+  other.style.display = sel.value === 'Other' ? 'block' : 'none';
+  if(sel.value !== 'Other') other.value = '';
+}
+
+
+// CLIENT AUTOCOMPLETE
+function buildClientProfiles(){
+  // Build latest profile per client from order history
+  var profiles = {};
+  // Process oldest to newest so latest data wins
+  var sorted = orders.slice().sort(function(a,b){
+    return new Date(a.dateISO||a.date) - new Date(b.dateISO||b.date);
+  });
+  sorted.forEach(function(o){
+    if(!profiles[o.name]){
+      profiles[o.name] = {name:o.name, phone:'', area:'', landmark:''};
+    }
+    if(o.phone)    profiles[o.name].phone    = o.phone;
+    if(o.area)     profiles[o.name].area     = o.area;
+    if(o.landmark) profiles[o.name].landmark = o.landmark;
+  });
+  return profiles;
+}
+
+var clientSuggestTimeout = null;
+
+function searchClients(val){
+  clearTimeout(clientSuggestTimeout);
+  var box = document.getElementById('client-suggestions');
+  if(!box) return;
+  if(!val || val.length < 1){ box.style.display='none'; return; }
+
+  clientSuggestTimeout = setTimeout(function(){
+    var profiles = buildClientProfiles();
+    var query = val.toLowerCase();
+    var matches = Object.values(profiles).filter(function(p){
+      return p.name.toLowerCase().indexOf(query) >= 0;
+    }).slice(0, 6);
+
+    if(!matches.length){ box.style.display='none'; return; }
+
+    box.innerHTML = matches.map(function(p){
+      var vip = isVIP(p.name) ? '<span style="font-size:9px;background:#f0a86422;color:var(--accent2);padding:1px 5px;border-radius:6px;margin-left:5px;font-weight:700;">VIP</span>' : '';
+      var orderCount = orders.filter(function(o){ return o.name===p.name; }).length;
+      return '<div class="client-suggest-item" data-name="'+p.name+'" data-phone="'+(p.phone||'')+'" data-area="'+(p.area||'')+'" data-landmark="'+(p.landmark||'')+'">'
+        + '<div style="font-size:13px;font-weight:500;">'+p.name+vip+'</div>'
+        + '<div style="font-size:11px;color:var(--muted);margin-top:2px;">'
+        + (p.area||'') + (p.phone?' &middot; '+p.phone:'')
+        + ' &middot; '+orderCount+' order'+(orderCount!==1?'s':'')
+        + '</div></div>';
+    }).join('');
+
+    // Attach click handlers
+    box.querySelectorAll('.client-suggest-item').forEach(function(item){
+      item.addEventListener('mousedown', function(e){
+        e.preventDefault(); // prevent blur firing before click
+        fillClientForm(
+          this.getAttribute('data-name'),
+          this.getAttribute('data-phone'),
+          this.getAttribute('data-area'),
+          this.getAttribute('data-landmark')
+        );
+      });
+    });
+
+    box.style.display = 'block';
+  }, 150);
+}
+
+function fillClientForm(name, phone, area, landmark){
+  var nameEl     = document.getElementById('o-name');
+  var phoneEl    = document.getElementById('o-phone');
+  var areaEl     = document.getElementById('o-area');
+  var landmarkEl = document.getElementById('o-landmark');
+
+  if(nameEl)     nameEl.value     = name;
+  if(phoneEl)    phoneEl.value    = phone || '';
+  if(landmarkEl) landmarkEl.value = landmark || '';
+
+  // Set area dropdown
+  if(areaEl && area){
+    // Try to find matching option
+    var found = false;
+    for(var i=0;i<areaEl.options.length;i++){
+      if(areaEl.options[i].value === area || areaEl.options[i].text === area){
+        areaEl.selectedIndex = i;
+        found = true;
+        break;
+      }
+    }
+    // If not in dropdown, select Other and fill text
+    if(!found){
+      for(var j=0;j<areaEl.options.length;j++){
+        if(areaEl.options[j].value === 'Other' || areaEl.options[j].text === 'Other'){
+          areaEl.selectedIndex = j;
+          break;
+        }
+      }
+      var otherField = document.getElementById('o-area-other');
+      if(otherField){ otherField.style.display='block'; otherField.value=area; }
+    }
+  }
+
+  // Hide suggestions
+  var box = document.getElementById('client-suggestions');
+  if(box) box.style.display = 'none';
+
+  // Trigger VIP check and referral update
+  calc();
+  updateReferrerDropdown();
+
+  // Show toast if VIP
+  if(isVIP(name)){
+    toast(name + ' is VIP — locked rate applied!');
+  }
+}
+
+function hideClientSuggestions(){
+  setTimeout(function(){
+    var box = document.getElementById('client-suggestions');
+    if(box) box.style.display = 'none';
+  }, 200);
+}
+
+function handleClientKey(e){
+  var box = document.getElementById('client-suggestions');
+  if(!box || box.style.display==='none') return;
+  var items = box.querySelectorAll('.client-suggest-item');
+  var active = box.querySelector('.client-suggest-item.active');
+  var idx = -1;
+  items.forEach(function(item,i){ if(item===active) idx=i; });
+
+  if(e.key==='ArrowDown'){
+    e.preventDefault();
+    if(active) active.classList.remove('active');
+    var next = items[idx+1] || items[0];
+    if(next) next.classList.add('active');
+  } else if(e.key==='ArrowUp'){
+    e.preventDefault();
+    if(active) active.classList.remove('active');
+    var prev = items[idx-1] || items[items.length-1];
+    if(prev) prev.classList.add('active');
+  } else if(e.key==='Enter' && active){
+    e.preventDefault();
+    fillClientForm(
+      active.getAttribute('data-name'),
+      active.getAttribute('data-phone'),
+      active.getAttribute('data-area'),
+      active.getAttribute('data-landmark')
+    );
+  } else if(e.key==='Escape'){
+    box.style.display='none';
+  }
+}
+
+
+// REFERRAL
+function updateReferrerDropdown(){
+  var sel = document.getElementById('o-referrer');
+  if(!sel) return;
+  // Build unique client list from orders
+  var seen = {};
+  var clients = [];
+  orders.forEach(function(o){
+    if(!seen[o.name]){ seen[o.name]=true; clients.push(o.name); }
+  });
+  clients.sort();
+  var opts = '<option value="">No referral</option>';
+  clients.forEach(function(name){
+    var vipTag = isVIP(name) ? ' (VIP)' : '';
+    opts += '<option value="' + name + '">' + name + vipTag + '</option>';
+  });
+  sel.innerHTML = opts;
+}
+
+function checkReferral(sel){
+  var badge = document.getElementById('referral-badge');
+  var name = sel.value;
+  if(!badge) return;
+  if(name && isVIP(name)){
+    badge.style.display = 'inline';
+    calc(); // recalc to show discount
+  } else {
+    badge.style.display = 'none';
+    calc();
+  }
+}
+
+function getReferralDiscount(){
+  var sel = document.getElementById('o-referrer');
+  if(!sel || !sel.value) return 0;
+  var referrer = sel.value;
+  // Only apply discount if referrer is active VIP
+  if(!isVIP(referrer)) return 0;
+  // Only apply on first order for this client
+  var clientName = (document.getElementById('o-name').value || '').trim();
+  if(!clientName) return 0;
+  var existingOrders = orders.filter(function(o){ return o.name === clientName; }).length;
+  if(existingOrders > 0) return 0; // not first order
+  return vipSettings.referralReward || 20;
+}
+
+// NAV
+function go(id, btn){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('s-' + id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  // Sync sidebar active state
+  var screenOrder = ['dashboard','orders','calendar','retention','expenses','team','reports','settings'];
+  var idx = screenOrder.indexOf(id);
+  if(idx >= 0) setSb(idx);
+  refresh();
+  if(id === 'settings') loadSettingsForm();
+  if(id === 'reports')  renderReports();
+  if(id === 'messages') loadInbox();
+  // Show FAB only on operational screens
+  var fab = document.getElementById('main-fab');
+  if(fab){
+    var hideFAB = ['reports','settings','s-reports','s-settings'].indexOf(id) >= 0;
+    fab.style.display = hideFAB ? 'none' : '';
+  }
+}
+function setbn(i){ document.querySelectorAll('.bn').forEach(function(b,j){ b.classList.toggle('active', i===j); }); }
+function setSb(i){ document.querySelectorAll('.sidebar-btn').forEach(function(b,j){ b.classList.toggle('active', i===j); }); }
+
+// DATE
+var now = new Date();
+document.getElementById('datePill').textContent =
+  now.toLocaleDateString('en-PH', {month:'short', day:'numeric', year:'numeric'});
+
+// CALC
+function calc(){
+  var cl  = parseFloat(document.getElementById('o-c').value)   || 0;
+  var sh  = parseFloat(document.getElementById('o-s').value)   || 0;
+  var com = parseFloat(document.getElementById('o-com').value) || 0;
+  var rush = document.getElementById('o-rush').value === 'yes';
+  var clientName = (document.getElementById('o-name').value || '').trim();
+  var baseClothesPrice = isVIP(clientName) ? vipSettings.lockedRate : pricing.clothesPrice;
+  var baseSheetsPrice  = isVIP(clientName) ? vipSettings.lockedRate : pricing.sheetsPrice;
+  var rushFeeActual    = (isVIP(clientName) && canUseFreeRush(clientName)) ? 0 : pricing.rushFee;
+  var ca  = Math.floor(cl / pricing.clothesKg) * baseClothesPrice + (cl % pricing.clothesKg) * pricing.clothesExcess;
+  var sa  = Math.floor(sh / pricing.sheetsKg)  * baseSheetsPrice  + (sh % pricing.sheetsKg)  * pricing.sheetsExcess;
+  var coa = com * pricing.comforterPrice;
+  var referralDiscount = getReferralDiscount();
+  var clientNameForCredit = (document.getElementById('o-name').value || '').trim();
+  var nextCred = clientNameForCredit ? getNextCredit(clientNameForCredit) : null;
+  var creditAmt = nextCred ? nextCred.amount : 0;
+  var total = Math.max(0, ca + sa + coa + (rush ? rushFeeActual : 0) - referralDiscount - creditAmt);
+  document.getElementById('calc-total').textContent = '\u20b1' + total.toLocaleString();
+  var parts = [];
+  if(ca)   parts.push('Clothes \u20b1' + ca);
+  if(sa)   parts.push('Sheets \u20b1' + sa);
+  if(coa)  parts.push('Comforter \u20b1' + coa);
+  if(rush){
+    if(rushFeeActual === 0) parts.push('Rush FREE (VIP)');
+    else parts.push('Rush +\u20b1' + pricing.rushFee);
+  }
+  if(isVIP(clientName)) parts.push('VIP rate applied');
+  if(creditAmt > 0) parts.push('Credit -₱' + creditAmt);
+  if(referralDiscount > 0) parts.push('Referral -₱' + referralDiscount);
+  document.getElementById('calc-break').textContent = parts.join(' · ') || 'Enter kg above to calculate';
+  return total;
+}
+
+// SUGGEST READY TIME
+function pad(n){ return String(n).padStart(2,'0'); }
+
+function dateToInputs(date){
+  return {
+    date: date.getFullYear() + '-' + pad(date.getMonth()+1) + '-' + pad(date.getDate()),
+    time: pad(date.getHours()) + ':' + pad(date.getMinutes())
+  };
+}
+
+function getPickupDateTime(){
+  var d = document.getElementById('o-pickup-date');
+  var t = document.getElementById('o-pickup-time');
+  if(!d || !t || !d.value) return null;
+  return new Date(d.value + 'T' + (t.value||'09:00'));
+}
+
+function getDeliveryDateTime(){
+  var d = document.getElementById('o-delivery-date');
+  var t = document.getElementById('o-delivery-time');
+  if(!d || !t || !d.value) return null;
+  return new Date(d.value + 'T' + (t.value||'09:00'));
+}
+
+function getPickupValue(){
+  var d = document.getElementById('o-pickup-date');
+  var t = document.getElementById('o-pickup-time');
+  if(!d||!t||!d.value) return '';
+  return d.value + 'T' + (t.value||'09:00');
+}
+
+function getDeliveryValue(){
+  var d = document.getElementById('o-delivery-date');
+  var t = document.getElementById('o-delivery-time');
+  if(!d||!t||!d.value) return '';
+  return d.value + 'T' + (t.value||'09:00');
+}
+
+function suggestReady(){
+  var rush = document.getElementById('o-rush').value === 'yes';
+  var hint = document.getElementById('tat-hint');
+  var pickupDate = getPickupDateTime();
+  if(!pickupDate || isNaN(pickupDate)) return;
+  var readyDate = new Date(pickupDate);
+  if(rush){
+    readyDate.setHours(readyDate.getHours() + 12);
+    if(hint){ hint.textContent = 'Rush: est. ready in ~12 hrs'; hint.style.color = 'var(--danger)'; }
+  } else {
+    readyDate.setHours(readyDate.getHours() + 24);
+    if(hint){ hint.textContent = 'Regular: 24-48 hrs TAT'; hint.style.color = 'var(--accent2)'; }
+  }
+  var vals = dateToInputs(readyDate);
+  var dd = document.getElementById('o-delivery-date');
+  var dt = document.getElementById('o-delivery-time');
+  if(dd) dd.value = vals.date;
+  if(dt) dt.value = vals.time;
+}
+
+function setDefaultPickup(){
+  var now2 = new Date();
+  var vals = dateToInputs(now2);
+  var pd = document.getElementById('o-pickup-date');
+  var pt = document.getElementById('o-pickup-time');
+  if(pd) pd.value = vals.date;
+  if(pt) pt.value = vals.time;
+  suggestReady();
+}
+
+// SAVE ORDER
+function saveOrder(){
+  var name = document.getElementById('o-name').value.trim();
+  var areaSelect = document.getElementById('o-area').value;
+  var areaOther  = document.getElementById('o-area-other').value.trim();
+  var area = areaSelect === 'Other' ? (areaOther || 'Other') : areaSelect;
+  if(!name || !area){ toast('Fill in name and area'); return; }
+  var total = calc();
+  if(!total){ toast('Add at least one item'); return; }
+  var phone    = document.getElementById('o-phone').value.trim();
+  var landmark = document.getElementById('o-landmark').value.trim();
+  var pay      = document.getElementById('o-pay').value;
+  var pickup   = getPickupValue();
+  var delivery = getDeliveryValue();
+  var notes    = document.getElementById('o-notes').value.trim();
+  // Collect service quantities
+  var serviceQtys = {};
+  getActiveServices().forEach(function(svc){
+    var el = document.getElementById('svc_input_' + svc.id);
+    if(el && parseFloat(el.value)) serviceQtys[svc.id] = parseFloat(el.value);
+  });
+  orders.unshift({
+    id: Date.now(), name: name, area: area, phone: phone,
+    landmark: landmark, total: total, pay: pay,
+    orderType: currentOrderType,
+    serviceQtys: serviceQtys,
+    referredBy: (document.getElementById('o-referrer') ? document.getElementById('o-referrer').value : ''),
+    referralDiscount: getReferralDiscount(),
+    pickup: pickup, delivery: delivery, notes: notes,
+    status: 'pending',
+    date: new Date().toDateString(),
+    dateISO: new Date().toISOString().slice(0,10),
+    time: new Date().toLocaleTimeString('en-PH', {hour:'2-digit', minute:'2-digit'})
+  });
+  save();
+  // Send referral welcome SMS if applicable
+  var referrerSelCheck = document.getElementById('o-referrer');
+  if(referrerSelCheck && referrerSelCheck.value && isVIP(referrerSelCheck.value)){
+    var refName = referrerSelCheck.value;
+    var pickupValStr = getPickupValue();
+    var pickupDisplayStr = pickupValStr ? new Date(pickupValStr).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    var referralSMS = 'Hi ' + name + '! Welcome to LabaLuxe! \u{1F389} ' + refName + ' referred you so you get \u20B120 off this order. Your laundry pickup is scheduled on ' + pickupDisplayStr + '. Palihug og ready ha! \u{1F9FA}';
+    var phoneEl2 = document.getElementById('o-phone');
+    if(phoneEl2 && phoneEl2.value){
+      // Store for modal to show
+      orders[0].referralSMSReady = encodeURIComponent(referralSMS);
+    }
+  }
+
+  // Apply client credit
+  if(creditAmt > 0){
+    consumeNextCredit(orders[0].name);
+    orders[0].creditApplied = creditAmt;
+  }
+
+  // Credit VIP referrer
+  var referrerSel = document.getElementById('o-referrer');
+  if(referrerSel && referrerSel.value && isVIP(referrerSel.value)){
+    var referrerName = referrerSel.value;
+    if(vipClients[referrerName]){
+      vipClients[referrerName].referrals = (vipClients[referrerName].referrals || 0) + 1;
+    }
+  }
+  if(referrerSel) referrerSel.value = '';
+  var refBadge = document.getElementById('referral-badge');
+  if(refBadge) refBadge.style.display = 'none';
+
+  // Clear split date/time fields
+  var pd=document.getElementById('o-pickup-date'),pt=document.getElementById('o-pickup-time');
+  var dd=document.getElementById('o-delivery-date'),dt=document.getElementById('o-delivery-time');
+
+  // Clear service fields
+  getActiveServices().forEach(function(svc){
+    var el = document.getElementById('svc_input_' + svc.id);
+    if(el) el.value = '';
+  });
+  ['o-name','o-phone','o-landmark','o-notes'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  document.getElementById('o-area').value = '';
+  document.getElementById('o-rush').value = 'no';
+  document.getElementById('o-pay').value  = 'GCash';
+  setOrderType('pickup');
+  setDefaultPickup();
+  refresh();
+  // Check if this order pushed client to VIP threshold
+  var newCount = getClientOrderCount(name);
+  if(newCount >= vipSettings.threshold && !vipClients[name]){
+    toast(name + ' now qualifies for VIP! Check Clients tab.');
+    document.getElementById('notifDot').classList.add('on');
+  } else {
+    toast('Order saved for ' + name + '!');
+  }
+}
+
+// ORDER STATUS
+// Status labels vary by order type
+var statusLabelPickup  = {pending:'Scheduled', washing:'Sorting/Washing', ready:'Ready for Delivery', delivered:'Delivered'};
+var statusLabelDropoff = {pending:'Received',  washing:'Sorting/Washing', ready:'Ready for Pickup',   delivered:'Picked Up'};
+var statusClass = {pending:'sp', washing:'sw', ready:'sr', delivered:'sd'};
+var nextStatus  = {pending:'washing', washing:'ready', ready:'delivered', delivered:'pending'};
+var nextLabelPickup  = {pending:'Start Washing', washing:'Mark Ready',    ready:'Mark Delivered', delivered:'Re-open'};
+var nextLabelDropoff = {pending:'Start Washing', washing:'Mark Ready',    ready:'Mark Picked Up', delivered:'Re-open'};
+
+function statusLabel(order){
+  var map = (order && order.orderType === 'dropoff') ? statusLabelDropoff : statusLabelPickup;
+  return map;
+}
+function nextLabel(order){
+  var map = (order && order.orderType === 'dropoff') ? nextLabelDropoff : nextLabelPickup;
+  return map;
+}
+var typeLabel   = {pickup:'Pickup & Deliver', dropoff:'Drop-off / Walk-in'};
+var typeColor   = {pickup:'var(--accent)', dropoff:'var(--accent2)'};
+
+function advanceStatus(id){
+  var o = orders.find(function(x){ return x.id === id; });
+  if(!o) return;
+  o.status = nextStatus[o.status];
+  save(); refresh();
+  toast(o.name + ' moved to ' + statusLabel(o)[o.status]);
+  checkNotif();
+}
+
+function confirmDelete(id){
+  var btn = document.getElementById('del-btn-' + id);
+  if(!btn) return;
+  if(btn.dataset.confirming === 'true'){
+    deleteOrder(id);
+  } else {
+    btn.dataset.confirming = 'true';
+    btn.textContent = 'Tap again to confirm';
+    btn.style.background = 'rgba(240,112,112,0.15)';
+    setTimeout(function(){
+      if(btn){ btn.dataset.confirming = 'false'; btn.textContent = 'Delete order'; btn.style.background = ''; }
+    }, 3000);
+  }
+}
+
+function deleteOrder(id){
+  orders = orders.filter(function(x){ return x.id !== id; });
+  save(); refresh(); closeModal();
+  toast('Order deleted');
+}
+
+// ORDER LIST
+var orderFilter = 'all';
+function filterOrders(f, btn){
+  orderFilter = f;
+  document.querySelectorAll('#s-orders .ftab').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  renderOrders();
+}
+
+function renderOrders(){
+  var el = document.getElementById('orders-list');
+  var typeFilters = ['pickup','dropoff'];
+  var list = orderFilter === 'all' ? orders
+    : typeFilters.indexOf(orderFilter) >= 0 ? orders.filter(function(o){ return (o.orderType || 'pickup') === orderFilter; })
+    : orders.filter(function(o){ return o.status === orderFilter; });
+  if(!list.length){ el.innerHTML = '<div class="empty">No orders here.</div>'; return; }
+  el.innerHTML = list.map(function(o){
+    var tColor = typeColor[o.orderType || 'pickup'] || 'var(--accent)';
+    var tLabel = typeLabel[o.orderType || 'pickup'] || 'Pickup';
+    var notesHtml = o.notes ? '<div class="cmeta" style="margin-top:3px;color:var(--accent2);">Note: ' + o.notes.substring(0,40) + (o.notes.length>40?'...':'') + '</div>' : '';
+    return '<div class="card" onclick="openModal(' + o.id + ')" style="cursor:pointer;">'
+         + '<div class="card-row">'
+         + '<div>'
+         + '<div class="cname">' + o.name + (isVIP(o.name) ? ' <span style="font-size:9px;background:#f0a86422;color:var(--accent2);padding:1px 6px;border-radius:8px;font-weight:700;">VIP</span>' : '') + (vipSettings.priorityProcessing && isVIP(o.name) ? ' <span style="font-size:9px;background:#7eb8f720;color:var(--accent3);padding:1px 6px;border-radius:8px;font-weight:700;">PRIORITY</span>' : '') + '</div>'
+         + '<div class="cmeta">' + o.area + ' &middot; ' + o.time + (o.phone ? ' &middot; ' + o.phone : '') + '</div>'
+         + (o.landmark ? '<div class="cmeta" style="color:var(--accent3);margin-top:2px;">&#128205; ' + o.landmark + '</div>' : '')
+         + '<div class="cmeta" style="margin-top:2px;color:' + tColor + ';font-weight:500;">' + tLabel + '</div>'
+         + notesHtml
+         + '<span class="pill ' + statusClass[o.status] + '" onclick="event.stopPropagation();advanceStatus(' + o.id + ')">' + statusLabel(o)[o.status] + ' &rarr; ' + nextLabel(o)[o.status] + '</span>'
+         + '</div>'
+         + '<div style="text-align:right;flex-shrink:0;">'
+         + '<div class="camount">\u20b1' + o.total.toLocaleString() + '</div>'
+         + '<div class="cmeta">' + o.pay + '</div>'
+         + '</div>'
+         + '</div>'
+         + '</div>';
+  }).join('');
+}
+
+// MODAL
+function openModal(id){
+  var o = orders.find(function(x){ return x.id === id; });
+  if(!o) return;
+  var isDropoff = o.orderType === 'dropoff';
+  var pickupStr  = o.pickup  ? new Date(o.pickup).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
+  var deliverStr = o.delivery? new Date(o.delivery).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
+  var tLabel = typeLabel[o.orderType || 'pickup'] || 'Pickup';
+  var tColor = typeColor[o.orderType || 'pickup'] || 'var(--accent)';
+  // Status-specific message templates
+  var pickupStr2 = o.pickup ? new Date(o.pickup).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+  var smsTemplates = {
+    pending:   'Hi ' + o.name + '! LabaLuxe here. Your laundry is scheduled for pickup on ' + pickupStr2 + '. Palihug og ready ha! Thank you! \u{1F9FA}',
+    washing:   'Hi ' + o.name + '! Nakuha na namo ang imo laundry. We\'ll let you know once it\'s ready for delivery! \u{1F60A}',
+    ready:     'Hi ' + o.name + '! Your laundry is ready for delivery. What time are you free to receive it? \u{1F60A}',
+    delivered: 'Hi ' + o.name + '! Laundry delivered na! Thank you kaayo! \u{1F9FA}'
+  };
+  var smsMsg = encodeURIComponent(smsTemplates[o.status] || smsTemplates.pending);
+  var vipBadge = isVIP(o.name) ? ' <span style="font-size:11px;background:#f0a86422;color:var(--accent2);padding:2px 8px;border-radius:10px;font-weight:700;">VIP</span>' : '';
+  var html = '<div class="modal-title">' + o.name + vipBadge + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">'
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:13px;">Area</span><span style="font-size:13px;">' + o.area + '</span></div>'
+    + (o.landmark ? '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:13px;">Landmark</span><span style="font-size:13px;color:var(--accent3);">&#128205; ' + o.landmark + '</span></div>' : '')
+    + (o.phone    ? '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:13px;">Phone</span><a href="tel:' + o.phone + '" style="font-size:13px;color:var(--accent3);">' + o.phone + '</a></div>' : '')
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:13px;">Amount</span><span style="font-size:13px;color:var(--accent);font-weight:600;">\u20b1' + o.total.toLocaleString() + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:13px;">Payment</span><span style="font-size:13px;">' + o.pay + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:13px;">Type</span><span style="font-size:13px;font-weight:600;color:' + tColor + ';">' + tLabel + '</span></div>'
+    + (o.referredBy ? '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:13px;">Referred by</span><span style="font-size:13px;color:var(--accent);">' + o.referredBy + (isVIP(o.referredBy)?' (VIP)':'') + (o.referralDiscount?' -₱'+o.referralDiscount:'') + '</span></div>' : '')
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:13px;">' + (isDropoff ? 'Drop-off' : 'Pickup') + '</span><span style="font-size:13px;">' + pickupStr + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:13px;">Est. ready</span><span style="font-size:13px;color:var(--accent2);">' + deliverStr + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);font-size:13px;">Status</span><span class="pill ' + statusClass[o.status] + '" style="margin-top:0;">' + statusLabel(o)[o.status] + '</span></div>'
+    + (o.notes ? '<div><div style="color:var(--muted);font-size:12px;margin-bottom:4px;">Special instructions</div><div style="font-size:13px;background:var(--surface);padding:10px;border-radius:8px;line-height:1.5;">' + o.notes + '</div></div>' : '')
+    + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:8px;">'
+    + '<button class="btn" onclick="advanceStatus(' + o.id + ');closeModal();">Move to ' + nextLabel(o)[o.status] + '</button>'
+    + '<button class="btn-ghost" style="border-color:var(--accent);color:var(--accent);" onclick="openEditModal(' + o.id + ')">Edit order</button>'
+    + (o.pay === 'Unpaid' ? '<button class="btn-ghost" style="border-color:var(--accent2);color:var(--accent2);" onclick="markPaid(' + o.id + ')">Mark as paid</button>' : '')
+    + (o.phone && (o.orderType||'pickup')==='pickup' ? '<button class="btn-sms" style="width:100%;text-align:center;" data-action="sendsms" data-sms="' + smsMsg + '" data-phone="' + o.phone + '">Send SMS notification</button>' : '')
+    + '<button class="btn-ghost" id="del-btn-' + o.id + '" onclick="confirmDelete(' + o.id + ')" style="color:var(--danger);border-color:rgba(240,112,112,0.2);">Delete order</button>'
+    + '</div>';
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-bg').classList.add('open');
+  // SMS button handler
+  var smsBtn = document.querySelector('#modal-body [data-action="sendsms"]');
+  if(smsBtn){
+    smsBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var phone = this.getAttribute('data-phone');
+      var body  = this.getAttribute('data-sms');
+      window.location.href = 'sms:' + phone + '?body=' + body;
+    });
+  }
+}
+
+function closeModal(e){
+  if(!e || e.target === document.getElementById('modal-bg'))
+    document.getElementById('modal-bg').classList.remove('open');
+}
+
+
+// EDIT ORDER
+var editingId = null;
+
+function openEditModal(id){
+  var o = orders.find(function(x){ return x.id === id; });
+  if(!o) return;
+  editingId = id;
+
+  document.getElementById('edit-name').value     = o.name || '';
+  document.getElementById('edit-phone').value    = o.phone || '';
+  document.getElementById('edit-landmark').value = o.landmark || '';
+  document.getElementById('edit-notes').value    = o.notes || '';
+  document.getElementById('edit-rush').value     = (o.total && o.pay) ? 'no' : 'no';
+  document.getElementById('edit-pay').value      = o.pay || 'GCash';
+
+  // Populate area dropdown
+  var areaSel = document.getElementById('edit-area');
+  var areaOpts = '<option value="">Select barangay</option>';
+  serviceAreas.forEach(function(a){
+    areaOpts += '<option' + (a === o.area ? ' selected' : '') + '>' + a + '</option>';
+  });
+  areaOpts += '<option' + (o.area === 'Other' ? ' selected' : '') + '>Other</option>';
+  areaSel.innerHTML = areaOpts;
+
+  // We can't reverse-calculate kg from total reliably so leave at 0
+  // But show current total
+  document.getElementById('edit-c').value   = '';
+  document.getElementById('edit-s').value   = '';
+  document.getElementById('edit-com').value = '';
+  document.getElementById('edit-total').textContent = '₱' + o.total.toLocaleString();
+  document.getElementById('edit-break').textContent = 'Current total — enter kg to recalculate';
+
+  closeModal();
+  document.getElementById('edit-modal-bg').classList.add('open');
+}
+
+function calcEdit(){
+  var cl  = parseFloat(document.getElementById('edit-c').value)   || 0;
+  var sh  = parseFloat(document.getElementById('edit-s').value)   || 0;
+  var com = parseFloat(document.getElementById('edit-com').value) || 0;
+  var rush = document.getElementById('edit-rush').value === 'yes';
+  if(!cl && !sh && !com){ return null; }
+  var name = document.getElementById('edit-name').value.trim();
+  var baseC = isVIP(name) ? vipSettings.lockedRate : pricing.clothesPrice;
+  var baseS = isVIP(name) ? vipSettings.lockedRate : pricing.sheetsPrice;
+  var rushFee = (isVIP(name) && canUseFreeRush(name)) ? 0 : pricing.rushFee;
+  var ca  = Math.floor(cl/pricing.clothesKg)*baseC + (cl%pricing.clothesKg)*pricing.clothesExcess;
+  var sa  = Math.floor(sh/pricing.sheetsKg)*baseS  + (sh%pricing.sheetsKg)*pricing.sheetsExcess;
+  var coa = com * pricing.comforterPrice;
+  var total = ca + sa + coa + (rush ? rushFee : 0);
+  document.getElementById('edit-total').textContent = '₱' + total.toLocaleString();
+  var parts = [];
+  if(ca)   parts.push('Clothes ₱'+ca);
+  if(sa)   parts.push('Sheets ₱'+sa);
+  if(coa)  parts.push('Comforter ₱'+coa);
+  if(rush) parts.push('Rush +₱'+rushFee);
+  document.getElementById('edit-break').textContent = parts.join(' ·') || '-';
+  return total;
+}
+
+function saveEdit(){
+  var o = orders.find(function(x){ return x.id === editingId; });
+  if(!o){ toast('Order not found'); return; }
+  var name = document.getElementById('edit-name').value.trim();
+  var area = document.getElementById('edit-area').value;
+  if(!name || !area){ toast('Name and area required'); return; }
+  o.name     = name;
+  o.phone    = document.getElementById('edit-phone').value.trim();
+  o.area     = area;
+  o.landmark = document.getElementById('edit-landmark').value.trim();
+  o.notes    = document.getElementById('edit-notes').value.trim();
+  o.pay      = document.getElementById('edit-pay').value;
+  var newTotal = calcEdit();
+  if(newTotal !== null) o.total = newTotal;
+  save(); refresh();
+  closeEditModal();
+  toast('Order updated!');
+}
+
+function closeEditModal(e){
+  if(!e || e.target === document.getElementById('edit-modal-bg'))
+    document.getElementById('edit-modal-bg').classList.remove('open');
+}
+
+// PAYMENT STATUS
+function markPaid(id){
+  var o = orders.find(function(x){ return x.id === id; });
+  if(!o) return;
+  o.pay = 'Paid';
+  save(); refresh();
+  closeModal();
+  toast('Marked as paid!');
+}
+
+// CLIENT HISTORY
+function openClientModal(name){
+  var clientOrders = orders.filter(function(o){ return o.name === name; })
+    .sort(function(a,b){ return new Date(b.dateISO||b.date) - new Date(a.dateISO||a.date); });
+  var totalSpent = clientOrders.reduce(function(a,o){ return a+o.total; }, 0);
+  var unpaid = clientOrders.filter(function(o){ return o.pay === 'Unpaid'; });
+  var vipStatus = isVIP(name);
+  var v = vipClients[name];
+
+  var html = '<div class="modal-title">' + name
+    + (vipStatus ? ' <span style="font-size:11px;background:#f0a86422;color:var(--accent2);padding:2px 8px;border-radius:10px;font-weight:700;">VIP</span>' : '')
+    + '</div>';
+
+  // Summary strip
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">'
+    + '<div style="background:var(--surface2);border-radius:10px;padding:10px;text-align:center;">'
+    + '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Orders</div>'
+    + '<div style="font-family:Syne,sans-serif;font-size:20px;font-weight:700;color:var(--accent);">' + clientOrders.length + '</div></div>'
+    + '<div style="background:var(--surface2);border-radius:10px;padding:10px;text-align:center;">'
+    + '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Spent</div>'
+    + '<div style="font-family:Syne,sans-serif;font-size:18px;font-weight:700;color:var(--accent);">₱' + totalSpent.toLocaleString() + '</div></div>'
+    + '<div style="background:var(--surface2);border-radius:10px;padding:10px;text-align:center;">'
+    + '<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Unpaid</div>'
+    + '<div style="font-family:Syne,sans-serif;font-size:20px;font-weight:700;color:' + (unpaid.length?'var(--danger)':'var(--accent)') + ';">' + unpaid.length + '</div></div>'
+    + '</div>';
+
+  if(vipStatus && v){
+    html += '<div style="background:var(--surface2);border-radius:10px;padding:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">'
+      + '<div><div style="font-size:11px;color:var(--accent2);font-weight:600;">VIP since ' + v.since + '</div>'
+      + '<div style="font-size:11px;color:var(--muted);margin-top:2px;">Referrals: ' + (v.referrals||0) + ' · Locked rate: ₱' + vipSettings.lockedRate + '</div></div>'
+      + '<button class="btn-sm-ghost" style="color:var(--danger);" data-action="revoke-vip" data-name="' + name + '">Revoke VIP</button>'
+      + '</div>';
+  }
+
+  // Order history
+  html += '<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:10px;">Order history</div>';
+
+  if(!clientOrders.length){
+    html += '<div class="empty">No orders yet.</div>';
+  } else {
+    clientOrders.forEach(function(o){
+      var isPaid = o.pay !== 'Unpaid';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">'
+        + '<div>'
+        + '<div style="font-size:13px;font-weight:500;">' + (o.dateISO || o.date) + ' · ' + o.time + '</div>'
+        + '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + o.area + (o.landmark?' · '+o.landmark:'') + '</div>'
+        + '<div style="font-size:11px;margin-top:2px;">'
+        + '<span class="pill ' + statusClass[o.status] + '" style="margin-top:0;">' + statusLabel(o)[o.status] + '</span>'
+        + '</div></div>'
+        + '<div style="text-align:right;">'
+        + '<div style="font-family:Syne,sans-serif;font-size:15px;font-weight:700;color:var(--accent);">₱' + o.total.toLocaleString() + '</div>'
+        + '<div style="font-size:11px;margin-top:3px;color:' + (isPaid?'var(--muted)':'var(--danger)') + ';font-weight:' + (isPaid?'400':'600') + ';">' + o.pay + '</div>'
+        + (!isPaid ? '<button style="font-size:10px;background:var(--accent);color:#0a0a0f;border:none;border-radius:6px;padding:3px 8px;margin-top:4px;cursor:pointer;font-weight:600;" data-action="markpaid" data-id="' + o.id + '" data-client="' + name + '">Mark paid</button>' : '')
+        + '</div></div>';
+    });
+  }
+
+  document.getElementById('client-modal-body').innerHTML = html;
+  document.getElementById('client-modal-bg').classList.add('open');
+
+  // Attach event listeners via data attributes
+  document.getElementById('client-modal-body').querySelectorAll('[data-action]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var action = this.getAttribute('data-action');
+      if(action === 'revoke-vip'){
+        revokeVIP(this.getAttribute('data-name'));
+        closeClientModal();
+      }
+      if(action === 'markpaid'){
+        markPaid(parseInt(this.getAttribute('data-id')));
+        closeClientModal();
+        openClientModal(this.getAttribute('data-client'));
+      }
+    });
+  });
+}
+
+function closeClientModal(e){
+  if(!e || e.target === document.getElementById('client-modal-bg'))
+    document.getElementById('client-modal-bg').classList.remove('open');
+}
+
+
+
+
+
+
+// THEME
+function setTheme(theme){
+  var body = document.body;
+  if(theme === 'light'){
+    body.classList.add('light-mode');
+    document.getElementById('theme-dark')  && document.getElementById('theme-dark').classList.remove('active');
+    document.getElementById('theme-light') && document.getElementById('theme-light').classList.add('active');
+  } else {
+    body.classList.remove('light-mode');
+    document.getElementById('theme-dark')  && document.getElementById('theme-dark').classList.add('active');
+    document.getElementById('theme-light') && document.getElementById('theme-light').classList.remove('active');
+  }
+  try{ localStorage.setItem('cx_theme', theme); }catch(e){}
+}
+
+function loadTheme(){
+  var saved = load('cx_theme') || 'dark';
+  setTheme(saved);
+}
+
+
+
+// CREDIT SYSTEM
+var clientCredits = load('cx_credits') || {};
+
+// saveCredits() handled by Firebase
+
+function getAvailableCredit(name){
+  if(!clientCredits[name]) return 0;
+  return clientCredits[name]
+    .filter(function(c){ return !c.used; })
+    .reduce(function(a,c){ return a + c.amount; }, 0);
+}
+
+function getNextCredit(name){
+  if(!clientCredits[name]) return null;
+  return clientCredits[name].find(function(c){ return !c.used; }) || null;
+}
+
+function addCredit(name, amount, reason){
+  if(!clientCredits[name]) clientCredits[name] = [];
+  clientCredits[name].push({
+    amount: amount,
+    reason: reason || 'Manual credit',
+    date: new Date().toISOString().slice(0,10),
+    used: false,
+    id: Date.now()
+  });
+  saveCredits();
+}
+
+function addReferralCredit(name){
+  addCredit(name, vipSettings.referralReward || 20, 'Referral reward');
+  toast(name + ' earned ₱' + (vipSettings.referralReward||20) + ' referral credit!');
+}
+
+function consumeNextCredit(name){
+  if(!clientCredits[name]) return 0;
+  var credit = getNextCredit(name);
+  if(!credit) return 0;
+  credit.used = true;
+  saveCredits();
+  return credit.amount;
+}
+
+function openAddCreditModal(name){
+  var modal = document.getElementById('credit-modal-bg');
+  if(!modal) return;
+  document.getElementById('credit-client-name').textContent = name;
+  document.getElementById('credit-current-bal').textContent = '₱' + getAvailableCredit(name).toLocaleString();
+  document.getElementById('credit-amount').value = '';
+  document.getElementById('credit-reason').value = '';
+  modal.setAttribute('data-client', name);
+  modal.classList.add('open');
+}
+
+function saveManualCredit(){
+  var modal  = document.getElementById('credit-modal-bg');
+  var name   = modal ? modal.getAttribute('data-client') : '';
+  var amount = parseFloat(document.getElementById('credit-amount').value) || 0;
+  var reason = document.getElementById('credit-reason').value.trim() || 'Manual credit';
+  if(!name || !amount){ toast('Enter amount'); return; }
+  addCredit(name, amount, reason);
+  closeCreditModal();
+  renderRetention();
+  renderVIPSection();
+  toast('₱' + amount + ' credit added for ' + name + '!');
+}
+
+function closeCreditModal(e){
+  if(!e || e.target === document.getElementById('credit-modal-bg'))
+    document.getElementById('credit-modal-bg').classList.remove('open');
+}
+
+
+
+// SERVICES SYSTEM
+var DEFAULT_SERVICES = [
+  { id:'clothes',   name:'Clothes',       type:'kg',    baseKg:7,  basePrice:159, excess:25,  active:true,  isDefault:true },
+  { id:'sheets',    name:'Sheets/Linens', type:'kg',    baseKg:5,  basePrice:159, excess:35,  active:true,  isDefault:true },
+  { id:'comforter', name:'Comforter',     type:'piece', piecePrice:159,           active:true, isDefault:true },
+];
+
+var services = load('cx_services') || DEFAULT_SERVICES.map(function(s){ return Object.assign({},s); });
+var editingServiceId = null;
+
+// saveServices() handled by Firebase
+
+function getActiveServices(){
+  return services.filter(function(s){ return s.active; });
+}
+
+function renderServicesList(){
+  var el = document.getElementById('services-list');
+  if(!el) return;
+  el.innerHTML = services.map(function(svc){
+    var typeLabel = svc.type==='kg' ? 'Per kg' : svc.type==='piece' ? 'Per piece' : 'Fixed';
+    var priceLabel = svc.type==='kg'
+      ? '₱'+svc.basePrice+'/'+svc.baseKg+'kg +₱'+svc.excess+' excess'
+      : svc.type==='piece'
+      ? '₱'+svc.piecePrice+'/piece'
+      : '₱'+svc.fixedPrice+'/order';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">'
+      + '<div style="display:flex;align-items:center;gap:10px;">'
+      + '<input type="checkbox" '+(svc.active?'checked':'')+' data-svcid="'+svc.id+'" onchange="toggleServiceById(this)" style="width:16px;height:16px;accent-color:var(--accent);">'
+      + '<div><div style="font-size:13px;font-weight:500;">'+svc.name+(svc.isDefault?' <span style="font-size:9px;color:var(--muted);">default</span>':'')+'</div>'
+      + '<div style="font-size:11px;color:var(--muted);">'+typeLabel+' · '+priceLabel+'</div></div>'
+      + '</div>'
+      + (!svc.isDefault ? '<div style="display:flex;gap:6px;">'
+        + '<button class="btn-sm" data-action="edit-svc" data-id="'+svc.id+'">Edit</button>'
+        + '<button class="btn-danger" data-action="del-svc" data-id="'+svc.id+'">x</button>'
+        + '</div>' : '<button class="btn-sm" data-action="edit-svc" data-id="'+svc.id+'">Edit</button>')
+      + '</div>';
+  }).join('');
+
+  el.querySelectorAll('[data-action]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var action = this.getAttribute('data-action');
+      var id     = this.getAttribute('data-id');
+      if(action === 'edit-svc') openEditServiceModal(id);
+      if(action === 'del-svc')  deleteService(id);
+    });
+  });
+}
+
+function toggleServiceById(cb){
+  var id = cb.getAttribute('data-svcid');
+  toggleService(id);
+}
+
+function toggleService(id){
+  var svc = services.find(function(s){ return s.id===id; });
+  if(svc){ svc.active = !svc.active; saveServices(); renderServiceFields(); renderPricingSummary(); }
+}
+
+function openAddServiceModal(){
+  editingServiceId = null;
+  document.getElementById('service-modal-title').textContent = 'Add new service';
+  document.getElementById('svc-name').value = '';
+  document.getElementById('svc-type').value = 'kg';
+  document.getElementById('svc-base-kg').value = '';
+  document.getElementById('svc-base-price').value = '';
+  document.getElementById('svc-excess').value = '';
+  document.getElementById('svc-piece-price').value = '';
+  document.getElementById('svc-fixed-price') && (document.getElementById('svc-fixed-price').value = '');
+  toggleServiceFields('kg');
+  document.getElementById('service-modal-bg').classList.add('open');
+}
+
+function openEditServiceModal(id){
+  var svc = services.find(function(s){ return s.id===id; });
+  if(!svc) return;
+  editingServiceId = id;
+  document.getElementById('service-modal-title').textContent = 'Edit ' + svc.name;
+  document.getElementById('svc-name').value = svc.name;
+  document.getElementById('svc-type').value = svc.type;
+  document.getElementById('svc-base-kg').value    = svc.baseKg    || '';
+  document.getElementById('svc-base-price').value = svc.basePrice || svc.piecePrice || svc.fixedPrice || '';
+  document.getElementById('svc-excess').value     = svc.excess    || '';
+  document.getElementById('svc-piece-price').value= svc.piecePrice|| '';
+  if(document.getElementById('svc-fixed-price'))
+    document.getElementById('svc-fixed-price').value = svc.fixedPrice || '';
+  toggleServiceFields(svc.type);
+  document.getElementById('service-modal-bg').classList.add('open');
+}
+
+function toggleServiceFields(type){
+  document.getElementById('svc-kg-fields').style.display    = type==='kg'    ? '' : 'none';
+  document.getElementById('svc-piece-fields').style.display = type==='piece' ? '' : 'none';
+  document.getElementById('svc-fixed-fields').style.display = type==='fixed' ? '' : 'none';
+}
+
+function saveService(){
+  var name = document.getElementById('svc-name').value.trim();
+  var type = document.getElementById('svc-type').value;
+  if(!name){ toast('Enter service name'); return; }
+
+  var svcData = { name:name, type:type, active:true };
+  if(type==='kg'){
+    svcData.baseKg    = parseFloat(document.getElementById('svc-base-kg').value)    || 7;
+    svcData.basePrice = parseFloat(document.getElementById('svc-base-price').value) || 159;
+    svcData.excess    = parseFloat(document.getElementById('svc-excess').value)     || 25;
+  } else if(type==='piece'){
+    svcData.piecePrice = parseFloat(document.getElementById('svc-piece-price').value) || 159;
+  } else {
+    svcData.fixedPrice = parseFloat(document.getElementById('svc-fixed-price') ? document.getElementById('svc-fixed-price').value : 0) || 0;
+  }
+
+  if(editingServiceId){
+    var idx = services.findIndex(function(s){ return s.id===editingServiceId; });
+    if(idx>=0){ services[idx] = Object.assign(services[idx], svcData); }
+  } else {
+    svcData.id = 'svc_'+Date.now();
+    services.push(svcData);
+  }
+
+  saveServices();
+  renderServicesList();
+  renderServiceFields();
+  closeServiceModal();
+  toast(editingServiceId ? 'Service updated!' : 'Service added!');
+}
+
+function deleteService(id){
+  services = services.filter(function(s){ return s.id!==id; });
+  saveServices();
+  renderServicesList();
+  renderServiceFields();
+  toast('Service deleted');
+}
+
+function closeServiceModal(e){
+  if(!e || e.target===document.getElementById('service-modal-bg'))
+    document.getElementById('service-modal-bg').classList.remove('open');
+}
+
+function renderServiceFields(){
+  var el = document.getElementById('service-fields');
+  if(!el) return;
+  var active = getActiveServices();
+  el.innerHTML = active.map(function(svc){
+    var unit  = svc.type==='kg' ? 'kg' : svc.type==='piece' ? 'pcs' : '';
+    var step  = svc.type==='kg' ? '0.5' : '1';
+    var label = svc.name + (unit?' ('+unit+')':'');
+    return '<div class="field"><label>'+label+'</label>'
+      + '<input type="number" id="svc_input_'+svc.id+'" placeholder="0" min="0" step="'+step+'" oninput="calc()" data-svcid="'+svc.id+'">'
+      + '</div>';
+  }).join('');
+}
+
+
+// EXPORT & BACKUP
+function downloadFile(filename, content, mimeType){
+  var blob = new Blob([content], {type: mimeType});
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportCSV(type){
+  if(type === 'orders'){
+    var headers = ['ID','Date','Time','Client','Phone','Area','Landmark','Order Type','Clothes kg','Sheets kg','Comforter','Rush','Total','Payment','Status','Special Instructions','Referred By','Referral Discount'];
+    var rows = orders.map(function(o){
+      return [
+        o.id, o.dateISO||o.date, o.time, o.name, o.phone||'', o.area, o.landmark||'',
+        o.orderType||'pickup', '','','',
+        '', o.total, o.pay, o.status,
+        (o.notes||'').replace(/,/g,''), o.referredBy||'', o.referralDiscount||0
+      ].map(function(v){ return '"'+String(v||'').replace(/"/g,'""')+'"'; }).join(',');
+    });
+    var nl = String.fromCharCode(10);
+    var csv = [headers.join(',')].concat(rows).join(nl);
+    var date = new Date().toISOString().slice(0,10);
+    downloadFile('LabaLuxe_Orders_'+date+'.csv', csv, 'text/csv');
+    toast('Orders exported!');
+
+  } else if(type === 'expenses'){
+    var headers = ['Date','Item','Category','Amount'];
+    var rows = expenses.map(function(e){
+      return [e.date, e.item, e.cat, e.amt]
+        .map(function(v){ return '"'+String(v||'').replace(/"/g,'""')+'"'; }).join(',');
+    });
+    var nl2 = String.fromCharCode(10);
+    var csv = [headers.join(',')].concat(rows).join(nl2);
+    var date = new Date().toISOString().slice(0,10);
+    downloadFile('LabaLuxe_Expenses_'+date+'.csv', csv, 'text/csv');
+    toast('Expenses exported!');
+  }
+}
+
+function exportBackup(){
+  var backup = {
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    business: bizSettings,
+    pricing: pricing,
+    vipSettings: vipSettings,
+    vipClients: vipClients,
+    serviceAreas: serviceAreas,
+    orders: orders,
+    expenses: expenses,
+    tasks: tasks
+  };
+  var json = JSON.stringify(backup, null, 2);
+  var date = new Date().toISOString().slice(0,10);
+  downloadFile('CortexOS_Backup_'+date+'.json', json, 'application/json');
+  toast('Backup downloaded!');
+}
+
+function importBackup(input){
+  var file = input.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      var backup = JSON.parse(e.target.result);
+      var status = document.getElementById('restore-status');
+
+      // Validate it looks like our backup
+      if(!backup.orders || !backup.expenses){
+        if(status) status.textContent = 'Invalid backup file.';
+        status.style.color = 'var(--danger)';
+        return;
+      }
+
+      // Restore data
+      orders       = backup.orders       || [];
+      expenses     = backup.expenses     || [];
+      tasks        = backup.tasks        || [];
+      vipClients   = backup.vipClients   || {};
+      if(backup.pricing)     pricing      = backup.pricing;
+      if(backup.vipSettings) vipSettings  = backup.vipSettings;
+      if(backup.bizSettings) bizSettings  = backup.bizSettings;
+      if(backup.serviceAreas) serviceAreas = backup.serviceAreas;
+
+      save();
+      refresh();
+      updateAreaDropdown();
+      renderVIPSection();
+
+      if(status){
+        status.textContent = 'Restored ' + orders.length + ' orders, ' + expenses.length + ' expenses from ' + (backup.exportedAt||'backup') + '.';
+        status.style.color = 'var(--accent)';
+      }
+      toast('Backup restored!');
+    } catch(err){
+      var status = document.getElementById('restore-status');
+      if(status){ status.textContent = 'Error reading file: ' + err.message; status.style.color='var(--danger)'; }
+    }
+  };
+  reader.readAsText(file);
+  // Reset input
+  input.value = '';
+}
+
+function exportPrintReport(){
+  var now2   = new Date();
+  var month  = now2.toLocaleDateString('en-PH',{month:'long', year:'numeric'});
+  var allRev = orders.reduce(function(a,o){ return a+o.total; }, 0);
+  var allExp = expenses.reduce(function(a,e){ return a+e.amt; }, 0);
+  var profit = allRev - allExp;
+
+  // Monthly breakdown
+  var monthMap = {};
+  orders.forEach(function(o){
+    var d = new Date(o.dateISO||o.date);
+    var key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    var label = d.toLocaleDateString('en-PH',{month:'long',year:'numeric'});
+    if(!monthMap[key]) monthMap[key]={label:label,rev:0,count:0};
+    monthMap[key].rev   += o.total;
+    monthMap[key].count++;
+  });
+  var months = Object.keys(monthMap).sort().map(function(k){ return monthMap[k]; });
+
+  // Top areas
+  var areaMap = {};
+  orders.forEach(function(o){ areaMap[o.area]=(areaMap[o.area]||0)+o.total; });
+  var topAreas = Object.entries(areaMap).sort(function(a,b){ return b[1]-a[1]; }).slice(0,5);
+
+  // Top clients
+  var clientMap = {};
+  orders.forEach(function(o){
+    if(!clientMap[o.name]) clientMap[o.name]={name:o.name,total:0,count:0};
+    clientMap[o.name].total+=o.total; clientMap[o.name].count++;
+  });
+  var topClients = Object.values(clientMap).sort(function(a,b){ return b.total-a.total; }).slice(0,5);
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    + '<title>'+bizSettings.name+' — Income Report</title>'
+    + '<style>'
+    + 'body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;padding:20px;color:#111;}'
+    + 'h1{font-size:22px;margin-bottom:4px;} h2{font-size:16px;margin:24px 0 10px;border-bottom:2px solid #111;padding-bottom:6px;}'
+    + '.meta{color:#555;font-size:13px;margin-bottom:24px;}'
+    + '.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}'
+    + '.kpi{background:#f5f5f5;border-radius:8px;padding:14px;text-align:center;}'
+    + '.kpi-label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.6px;}'
+    + '.kpi-val{font-size:22px;font-weight:700;margin-top:4px;}'
+    + 'table{width:100%;border-collapse:collapse;font-size:13px;}'
+    + 'th{text-align:left;padding:8px 10px;background:#111;color:#fff;}'
+    + 'td{padding:7px 10px;border-bottom:1px solid #ddd;}'
+    + 'tr:nth-child(even) td{background:#f9f9f9;}'
+    + '.footer{margin-top:40px;font-size:11px;color:#999;text-align:center;}'
+    + '@media print{body{margin:0;} .no-print{display:none;}}'
+    + '</style></head><body>'
+    + '<h1>'+bizSettings.name+'</h1>'
+    + '<div class="meta">Income Report &mdash; Generated '+now2.toLocaleDateString('en-PH',{month:'long',day:'numeric',year:'numeric'})+'<br>'
+    + 'Ormoc City, Leyte | Laundry Service</div>'
+    + '<div class="kpi-row">'
+    + '<div class="kpi"><div class="kpi-label">Total revenue</div><div class="kpi-val" style="color:#1a7a4a;">&#8369;'+allRev.toLocaleString()+'</div></div>'
+    + '<div class="kpi"><div class="kpi-label">Total expenses</div><div class="kpi-val" style="color:#c0392b;">&#8369;'+allExp.toLocaleString()+'</div></div>'
+    + '<div class="kpi"><div class="kpi-label">Net profit</div><div class="kpi-val" style="color:#2471a3;">&#8369;'+profit.toLocaleString()+'</div></div>'
+    + '</div>'
+    + '<div class="kpi-row">'
+    + '<div class="kpi"><div class="kpi-label">Total orders</div><div class="kpi-val">'+orders.length+'</div></div>'
+    + '<div class="kpi"><div class="kpi-label">Unique clients</div><div class="kpi-val">'+Object.keys(clientMap).length+'</div></div>'
+    + '<div class="kpi"><div class="kpi-label">Avg order value</div><div class="kpi-val">&#8369;'+(orders.length?Math.round(allRev/orders.length):0).toLocaleString()+'</div></div>'
+    + '</div>'
+    + '<h2>Monthly revenue breakdown</h2>'
+    + '<table><tr><th>Month</th><th>Orders</th><th>Revenue</th><th>Avg/Order</th></tr>'
+    + months.map(function(m){
+        return '<tr><td>'+m.label+'</td><td>'+m.count+'</td><td>&#8369;'+m.rev.toLocaleString()+'</td><td>&#8369;'+Math.round(m.rev/m.count).toLocaleString()+'</td></tr>';
+      }).join('')
+    + '</table>'
+    + '<h2>Top areas by revenue</h2>'
+    + '<table><tr><th>Area</th><th>Revenue</th></tr>'
+    + topAreas.map(function(a){ return '<tr><td>'+a[0]+'</td><td>&#8369;'+a[1].toLocaleString()+'</td></tr>'; }).join('')
+    + '</table>'
+    + '<h2>Top clients</h2>'
+    + '<table><tr><th>Client</th><th>Orders</th><th>Total spent</th></tr>'
+    + topClients.map(function(c){ return '<tr><td>'+c.name+'</td><td>'+c.count+'</td><td>&#8369;'+c.total.toLocaleString()+'</td></tr>'; }).join('')
+    + '</table>'
+    + '<div class="footer">This document was generated by CORTEX OS &mdash; '+bizSettings.name+'</div>'
+    + '<br><button class="no-print" onclick="window.print()" style="padding:10px 24px;background:#111;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">Print / Save as PDF</button>'
+    + '</body></html>';
+
+  var win = window.open('','_blank');
+  if(win){ win.document.write(html); win.document.close(); }
+  else { toast('Allow popups to open the report'); }
+}
+
+
+
+// ── FACEBOOK MESSENGER INBOX ──────────────────────────────────
+var PAGE_TOKEN = 'EAAemRR5V64oBRAcZABzBVjsTqa6b2sLTS1gDYDsbKRW6UTdTdtsk5fqLibuOZBisqjgjQSoe4mgkXtPGc2DP9W3dzNIJZBSQh5UuVA26vu8frDKedZApDTS3cK2ivxVAZAdyZBAtToRAed1fpEU1GfQPrT4NEhgc8UUGhZCchioaQIo5BckQslZCZB4wJ3nLRczv7DC76BQZDZD';
+var GRAPH = 'https://graph.facebook.com/v18.0';
+var currentConvoId = null;
+var currentConvoName = '';
+var inboxData = [];
+
+function loadInbox(){
+  var el     = document.getElementById('inbox-list');
+  var status = document.getElementById('inbox-status');
+  if(!el) return;
+  el.innerHTML = '<div class="empty">Loading conversations...</div>';
+  if(status) status.textContent = 'Fetching from Facebook...';
+
+  // Fetch conversations from Page inbox
+  fetch(GRAPH + '/me/conversations?fields=participants,messages{message,from,created_time}&access_token=' + PAGE_TOKEN)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(data.error){
+        el.innerHTML = '<div class="empty" style="color:var(--danger);">Error: ' + data.error.message + '</div>';
+        if(status) status.textContent = '';
+        return;
+      }
+      inboxData = data.data || [];
+      if(status) status.textContent = inboxData.length + ' conversation' + (inboxData.length !== 1 ? 's' : '');
+      renderInbox();
+    })
+    .catch(function(e){
+      el.innerHTML = '<div class="empty" style="color:var(--danger);">Could not load inbox. Check your internet connection.</div>';
+      if(status) status.textContent = '';
+      console.error('Inbox error:', e);
+    });
+}
+
+function renderInbox(){
+  var el = document.getElementById('inbox-list');
+  if(!el) return;
+
+  if(!inboxData.length){
+    el.innerHTML = '<div class="empty">No conversations yet.</div>';
+    return;
+  }
+
+  el.innerHTML = inboxData.map(function(convo){
+    // Get participant name (not the Page itself)
+    var participants = (convo.participants && convo.participants.data) || [];
+    var client = participants.find(function(p){ return p.name !== 'LabaLuxe'; }) || participants[0] || {};
+    var name = client.name || 'Unknown';
+
+    // Get last message
+    var messages = (convo.messages && convo.messages.data) || [];
+    var lastMsg  = messages[0] || {};
+    var lastText = lastMsg.message || '';
+    var lastTime = lastMsg.created_time ? new Date(lastMsg.created_time).toLocaleDateString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+
+    // Truncate long messages
+    var preview = lastText.length > 50 ? lastText.slice(0,50) + '...' : lastText;
+
+    return '<div class="card" style="cursor:pointer;margin-bottom:8px;" data-convoid="' + convo.id + '" data-name="' + name.replace(/"/g,"&quot;") + '">'
+      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
+      + '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">'
+      + '<div style="width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:15px;color:#0a0a0f;">' + name.charAt(0).toUpperCase() + '</div>'
+      + '<div style="min-width:0;">'
+      + '<div style="font-size:14px;font-weight:600;">' + name + '</div>'
+      + '<div style="font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + preview + '</div>'
+      + '</div></div>'
+      + '<div style="font-size:10px;color:var(--muted);flex-shrink:0;margin-left:8px;">' + lastTime + '</div>'
+      + '</div></div>';
+  }).join('');
+
+  // Attach click listeners
+  el.querySelectorAll('[data-convoid]').forEach(function(card){
+    card.addEventListener('click', function(){
+      var id   = this.getAttribute('data-convoid');
+      var name = this.getAttribute('data-name');
+      openConvo(id, name);
+    });
+  });
+}
+
+function openConvo(convoId, name){
+  currentConvoId   = convoId;
+  currentConvoName = name;
+  document.getElementById('convo-name').textContent = name;
+  document.getElementById('inbox-list').style.display  = 'none';
+  document.getElementById('convo-view').style.display  = 'block';
+  document.getElementById('inbox-refresh-btn').style.display = 'none';
+  loadMessages(convoId);
+}
+
+function closeConvo(){
+  currentConvoId = null;
+  document.getElementById('convo-view').style.display  = 'none';
+  document.getElementById('inbox-list').style.display  = 'block';
+  document.getElementById('inbox-refresh-btn').style.display = '';
+}
+
+function loadMessages(convoId){
+  var el = document.getElementById('convo-messages');
+  el.innerHTML = '<div class="empty">Loading messages...</div>';
+
+  fetch(GRAPH + '/' + convoId + '/messages?fields=message,from,created_time&limit=20&access_token=' + PAGE_TOKEN)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(data.error){
+        el.innerHTML = '<div class="empty" style="color:var(--danger);">Error: ' + data.error.message + '</div>';
+        return;
+      }
+      var messages = (data.data || []).reverse(); // oldest first
+      renderMessages(messages);
+    })
+    .catch(function(e){
+      el.innerHTML = '<div class="empty" style="color:var(--danger);">Could not load messages.</div>';
+    });
+}
+
+function renderMessages(messages){
+  var el = document.getElementById('convo-messages');
+  if(!messages.length){
+    el.innerHTML = '<div class="empty">No messages yet.</div>';
+    return;
+  }
+
+  el.innerHTML = messages.map(function(msg){
+    var isPage = msg.from && msg.from.name === 'LabaLuxe';
+    var time   = msg.created_time ? new Date(msg.created_time).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'}) : '';
+    var align  = isPage ? 'flex-end' : 'flex-start';
+    var bg     = isPage ? 'var(--accent)' : 'var(--surface2)';
+    var color  = isPage ? '#0a0a0f' : 'var(--text)';
+    return '<div style="display:flex;justify-content:' + align + ';">'
+      + '<div style="max-width:75%;background:' + bg + ';color:' + color + ';border-radius:12px;padding:8px 12px;">'
+      + '<div style="font-size:13px;">' + (msg.message || '') + '</div>'
+      + '<div style="font-size:10px;opacity:.6;margin-top:3px;text-align:right;">' + time + '</div>'
+      + '</div></div>';
+  }).join('');
+
+  // Scroll to bottom
+  el.scrollTop = el.scrollHeight;
+}
+
+function sendReply(){
+  var input  = document.getElementById('reply-input');
+  var status = document.getElementById('reply-status');
+  var text   = input.value.trim();
+  if(!text || !currentConvoId){ return; }
+
+  // Get the recipient ID from the conversation
+  var convo = inboxData.find(function(c){ return c.id === currentConvoId; });
+  if(!convo){ status.textContent = 'Error: conversation not found'; return; }
+
+  var participants = (convo.participants && convo.participants.data) || [];
+  var client = participants.find(function(p){ return p.name !== 'LabaLuxe'; }) || participants[0];
+  if(!client){ status.textContent = 'Error: recipient not found'; return; }
+
+  status.textContent = 'Sending...';
+  input.value = '';
+
+  fetch(GRAPH + '/me/messages', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      recipient: { id: client.id },
+      message:   { text: text },
+      access_token: PAGE_TOKEN
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.error){
+      status.textContent = 'Error: ' + data.error.message;
+      input.value = text; // restore
+    } else {
+      status.textContent = 'Sent!';
+      setTimeout(function(){ status.textContent = ''; }, 2000);
+      loadMessages(currentConvoId); // refresh thread
+    }
+  })
+  .catch(function(){
+    status.textContent = 'Failed to send. Check connection.';
+    input.value = text;
+  });
+}
+
+
+// REPORTS
+var reportPeriod = 'month';
+
+function setReportPeriod(period, btn){
+  reportPeriod = period;
+  document.querySelectorAll('#s-reports .ftab').forEach(function(b){ b.classList.remove('on'); });
+  if(btn) btn.classList.add('on');
+  renderReports();
+}
+
+function getReportRange(period){
+  var now = new Date();
+  var start, end = new Date(now);
+  end.setHours(23,59,59,999);
+
+  if(period === 'week'){
+    start = new Date(now);
+    start.setDate(now.getDate() - now.getDay());
+    start.setHours(0,0,0,0);
+  } else if(period === 'month'){
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+  } else if(period === 'last_month'){
+    start = new Date(now.getFullYear(), now.getMonth()-1, 1);
+    end   = new Date(now.getFullYear(), now.getMonth(), 0);
+    end.setHours(23,59,59,999);
+  } else if(period === 'quarter'){
+    var q = Math.floor(now.getMonth()/3);
+    start = new Date(now.getFullYear(), q*3, 1);
+  } else {
+    start = new Date('2020-01-01');
+  }
+  return {start: start, end: end};
+}
+
+function filterByRange(arr, range, dateField){
+  return arr.filter(function(item){
+    var d = new Date(item[dateField] || item.date || '');
+    return d >= range.start && d <= range.end;
+  });
+}
+
+function renderReports(){
+  var range = getReportRange(reportPeriod);
+  var filtOrders = filterByRange(orders, range, 'dateISO');
+  var filtExp    = filterByRange(expenses, range, 'date');
+
+  // KPIs
+  var rev  = filtOrders.reduce(function(a,o){ return a+o.total; }, 0);
+  var exp  = filtExp.reduce(function(a,e){ return a+e.amt; }, 0);
+  var prof = rev - exp;
+  var avg  = filtOrders.length ? Math.round(rev/filtOrders.length) : 0;
+  var margin = rev ? Math.round(prof/rev*100) : 0;
+
+  document.getElementById('rep-revenue').textContent  = '₱'+rev.toLocaleString();
+  document.getElementById('rep-orders').textContent   = filtOrders.length+' orders';
+  document.getElementById('rep-expenses').textContent = '₱'+exp.toLocaleString();
+  document.getElementById('rep-exp-ct').textContent   = filtExp.length+' entries';
+  document.getElementById('rep-profit').textContent   = '₱'+prof.toLocaleString();
+  document.getElementById('rep-margin').textContent   = margin+'% margin';
+  document.getElementById('rep-avg').textContent      = '₱'+avg.toLocaleString();
+
+  // Revenue bars
+  renderRevBars(filtOrders, range);
+
+  // Top areas
+  renderRepSection('rep-areas', groupBy(filtOrders, 'area'), 'revenue', '₱');
+
+  // Expense categories
+  renderExpCats(filtExp);
+
+  // Top clients
+  renderRepSection('rep-clients', groupByClients(filtOrders), 'revenue', '₱');
+
+  // Payment methods
+  renderPayments(filtOrders);
+}
+
+function groupBy(items, field){
+  var map = {};
+  items.forEach(function(o){
+    var key = o[field] || 'Unknown';
+    if(!map[key]) map[key] = {label:key, revenue:0, count:0};
+    map[key].revenue += o.total;
+    map[key].count++;
+  });
+  return Object.values(map).sort(function(a,b){ return b.revenue-a.revenue; });
+}
+
+function groupByClients(items){
+  var map = {};
+  items.forEach(function(o){
+    if(!map[o.name]) map[o.name] = {label:o.name, revenue:0, count:0};
+    map[o.name].revenue += o.total;
+    map[o.name].count++;
+  });
+  return Object.values(map).sort(function(a,b){ return b.revenue-a.revenue; });
+}
+
+function renderRepSection(elId, data, valueField, prefix){
+  var el = document.getElementById(elId);
+  if(!el) return;
+  if(!data.length){ el.innerHTML='<div class="empty">No data for this period.</div>'; return; }
+  var max = data[0][valueField];
+  el.innerHTML = data.slice(0,6).map(function(item){
+    var pct = max ? Math.round(item[valueField]/max*100) : 0;
+    var vip = isVIP(item.label) ? ' <span style="font-size:9px;background:#f0a86422;color:var(--accent2);padding:1px 5px;border-radius:6px;font-weight:700;">VIP</span>' : '';
+    return '<div style="margin-bottom:12px;">'
+      + '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
+      + '<span style="font-size:13px;font-weight:500;">'+item.label+vip+'</span>'
+      + '<span style="font-size:13px;color:var(--accent);">'+prefix+item[valueField].toLocaleString()+' <span style="color:var(--muted);font-size:11px;">('+item.count+' orders)</span></span>'
+      + '</div>'
+      + '<div style="height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;">'
+      + '<div style="height:100%;width:'+pct+'%;background:var(--accent);border-radius:3px;transition:width .5s;"></div>'
+      + '</div></div>';
+  }).join('');
+}
+
+function renderExpCats(filtExp){
+  var el = document.getElementById('rep-exp-cats');
+  if(!el) return;
+  if(!filtExp.length){ el.innerHTML='<div class="empty">No expenses for this period.</div>'; return; }
+  var map = {};
+  filtExp.forEach(function(e){
+    if(!map[e.cat]) map[e.cat] = {label:e.cat, revenue:0, count:0};
+    map[e.cat].revenue += e.amt;
+    map[e.cat].count++;
+  });
+  var data = Object.values(map).sort(function(a,b){ return b.revenue-a.revenue; });
+  var max = data[0].revenue;
+  var colors = ['var(--danger)','var(--accent2)','var(--accent3)','var(--accent)','var(--muted)'];
+  el.innerHTML = data.map(function(item, i){
+    var pct = max ? Math.round(item.revenue/max*100) : 0;
+    var color = colors[i % colors.length];
+    return '<div style="margin-bottom:12px;">'
+      + '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
+      + '<span style="font-size:13px;font-weight:500;">'+item.label+'</span>'
+      + '<span style="font-size:13px;color:'+color+';">₱'+item.revenue.toLocaleString()+' <span style="color:var(--muted);font-size:11px;">('+item.count+')</span></span>'
+      + '</div>'
+      + '<div style="height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;">'
+      + '<div style="height:100%;width:'+pct+'%;background:'+color+';border-radius:3px;transition:width .5s;"></div>'
+      + '</div></div>';
+  }).join('');
+}
+
+function renderPayments(filtOrders){
+  var el = document.getElementById('rep-payments');
+  if(!el) return;
+  if(!filtOrders.length){ el.innerHTML='<div class="empty">No orders for this period.</div>'; return; }
+  var map = {};
+  filtOrders.forEach(function(o){
+    var key = o.pay || 'Unknown';
+    if(!map[key]) map[key] = {label:key, revenue:0, count:0};
+    map[key].revenue += o.total;
+    map[key].count++;
+  });
+  var data = Object.values(map).sort(function(a,b){ return b.count-a.count; });
+  var totalOrds = filtOrders.length;
+  el.innerHTML = data.map(function(item){
+    var pct = Math.round(item.count/totalOrds*100);
+    var isPaid = item.label !== 'Unpaid';
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);">'
+      + '<div><div style="font-size:13px;font-weight:500;">'+item.label+'</div>'
+      + '<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+item.count+' orders ('+pct+'%)</div></div>'
+      + '<div style="text-align:right;">'
+      + '<div style="font-size:14px;font-weight:700;font-family:Syne,sans-serif;color:'+(isPaid?'var(--accent)':'var(--danger)')+';">₱'+item.revenue.toLocaleString()+'</div>'
+      + '</div></div>';
+  }).join('');
+}
+
+function renderRevBars(filtOrders, range){
+  var barsEl  = document.getElementById('rep-bars');
+  var labelsEl = document.getElementById('rep-bar-labels');
+  if(!barsEl || !labelsEl) return;
+  if(!filtOrders.length){
+    barsEl.innerHTML = '<div class="empty" style="width:100%;">No data</div>';
+    labelsEl.innerHTML = '';
+    return;
+  }
+
+  // Group by day or week depending on period
+  var useWeeks = (reportPeriod === 'quarter' || reportPeriod === 'all');
+  var map = {};
+
+  filtOrders.forEach(function(o){
+    var d = new Date(o.dateISO || o.date);
+    var key;
+    if(useWeeks){
+      // Week number within year
+      var startOfYear = new Date(d.getFullYear(), 0, 1);
+      var week = Math.ceil(((d - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+      key = d.getFullYear() + '-W' + String(week).padStart(2,'0');
+    } else {
+      key = o.dateISO || d.toISOString().slice(0,10);
+    }
+    map[key] = (map[key]||0) + o.total;
+  });
+
+  var keys = Object.keys(map).sort();
+  var vals = keys.map(function(k){ return map[k]; });
+  var maxVal = Math.max.apply(null, vals) || 1;
+
+  var MAX_BARS = 14; // limit bars to avoid cramping on mobile
+  if(keys.length > MAX_BARS){
+    // Keep only last MAX_BARS entries
+    keys = keys.slice(keys.length - MAX_BARS);
+    vals = vals.slice(vals.length - MAX_BARS);
+  }
+
+  var todayISO = new Date().toISOString().slice(0,10);
+
+  barsEl.innerHTML = vals.map(function(v, i){
+    var pct = Math.round(v / maxVal * 100);
+    var barH = Math.max(6, Math.round(pct * 1.0)); // max 100px height
+    var isToday = keys[i] === todayISO;
+    var label = v >= 1000 ? '₱'+Math.round(v/1000)+'k' : '₱'+v;
+    return '<div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px;">'
+      + '<div style="font-size:9px;color:var(--muted);white-space:nowrap;">'+label+'</div>'
+      + '<div style="width:80%;height:'+barH+'px;max-height:100px;background:'+(isToday?'var(--accent)':'var(--accent3)')+';border-radius:3px 3px 0 0;transition:height .4s;"></div>'
+      + '</div>';
+  }).join('');
+
+  labelsEl.innerHTML = keys.map(function(k){
+    var label = useWeeks ? k.split('-W')[1] : k.slice(5); // MM-DD or week num
+    return '<div style="flex:1;font-size:9px;color:var(--muted);text-align:center;overflow:hidden;">'+label+'</div>';
+  }).join('');
+}
+
+
+
+// TAB BADGES
+function updateTabBadges(){
+  var today = new Date().toDateString();
+  var todayOrds = orders.filter(function(o){ return o.date === today && o.status !== 'delivered'; });
+  var overdueOrds = orders.filter(function(o){
+    return o.delivery && new Date(o.delivery) < new Date() && o.status !== 'delivered';
+  });
+  var pendingVIPs = getPendingVIPs ? getPendingVIPs().length : 0;
+  var followUpClients = buildClients ? buildClients().filter(function(c){ return c.days >= 14; }).length : 0;
+
+  // Update notification dot
+  var dot = document.getElementById('notifDot');
+  if(dot) dot.classList.toggle('on', overdueOrds.length > 0 || pendingVIPs > 0 || followUpClients > 0);
+}
+
+
+// CALENDAR
+var calYear = now.getFullYear(), calMonth = now.getMonth();
+var selectedDate = now.toISOString().slice(0,10);
+var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function calNav(dir){
+  calMonth += dir;
+  if(calMonth > 11){ calMonth = 0; calYear++; }
+  else if(calMonth < 0){ calMonth = 11; calYear--; }
+  renderCal();
+}
+
+function renderCal(){
+  document.getElementById('cal-title').textContent = MONTHS[calMonth] + ' ' + calYear;
+  var first = new Date(calYear, calMonth, 1).getDay();
+  var days  = new Date(calYear, calMonth+1, 0).getDate();
+  var todayISO = new Date().toISOString().slice(0,10);
+  var dayCount = {}, dayOverdue = {};
+  orders.forEach(function(o){
+    var d = o.dateISO || '';
+    if(!d) return;
+    dayCount[d] = (dayCount[d] || 0) + 1;
+    if(o.delivery && o.status !== 'delivered'){
+      if(new Date(o.delivery) < new Date()) dayOverdue[d] = (dayOverdue[d] || 0) + 1;
+    }
+  });
+  var html = '';
+  for(var i=0; i<first; i++) html += '<div class="cal-day other-month"></div>';
+  for(var d=1; d<=days; d++){
+    var iso = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    var count = dayCount[iso] || 0;
+    var overdue = dayOverdue[iso] || 0;
+    var cls = 'cal-day' + (iso===todayISO?' today':'') + (iso===selectedDate?' selected':'') + (count>0?' has-orders':'');
+    var badge = count > 0 ? '<span style="font-size:9px;font-weight:700;display:block;margin-top:1px;color:' + (overdue>0?'var(--danger)':'var(--accent2)') + ';">' + count + '</span>' : '';
+    html += '<div class="' + cls + '" onclick="selectCalDay(\'' + iso + '\')">' + d + badge + '</div>';
+  }
+  document.getElementById('cal-cells').outerHTML = '<div id="cal-cells" style="display:contents;">' + html + '</div>';
+  renderCalOrders();
+  refreshSchedKPIs();
+}
+
+function selectCalDay(iso){
+  selectedDate = iso;
+  renderCal();
+}
+
+function refreshSchedKPIs(){
+  var todayISO = new Date().toISOString().slice(0,10);
+  var todayOrds = orders.filter(function(o){ return o.dateISO === todayISO; });
+  var pickups = todayOrds.filter(function(o){ return o.orderType === 'pickup' && o.status === 'pending'; }).length;
+  var deliveries = orders.filter(function(o){ return o.status === 'ready'; }).length;
+  var overdueOrds = orders.filter(function(o){
+    if(o.status === 'delivered') return false;
+    if(!o.delivery) return false;
+    return new Date(o.delivery) < new Date();
+  });
+  document.getElementById('sched-pickups').textContent = pickups;
+  document.getElementById('sched-deliveries').textContent = deliveries;
+  var overdueCard = document.getElementById('sched-overdue-card');
+  if(overdueOrds.length > 0){
+    overdueCard.style.display = 'block';
+    document.getElementById('sched-overdue').textContent = overdueOrds.length;
+    var names = overdueOrds.slice(0,3).map(function(o){ return o.name; }).join(', ');
+    document.getElementById('sched-overdue-names').textContent = names + (overdueOrds.length > 3 ? ' +more' : '');
+  } else {
+    overdueCard.style.display = 'none';
+  }
+}
+
+function renderCalOrders(){
+  var d = new Date(selectedDate + 'T00:00:00');
+  var isToday = selectedDate === new Date().toISOString().slice(0,10);
+  document.getElementById('cal-day-title').textContent = isToday ? "Today's schedule"
+    : d.toLocaleDateString('en-PH', {weekday:'long', month:'long', day:'numeric'});
+  var dayOrders = orders.filter(function(o){ return o.dateISO === selectedDate; })
+    .sort(function(a,b){
+      var ta = a.pickup ? new Date(a.pickup) : new Date(a.date);
+      var tb = b.pickup ? new Date(b.pickup) : new Date(b.date);
+      return ta - tb;
+    });
+  var el = document.getElementById('cal-orders');
+  if(!dayOrders.length){ el.innerHTML = '<div class="empty">No orders on this day.</div>'; return; }
+  el.innerHTML = dayOrders.map(function(o){
+    var pickupStr = o.pickup ? new Date(o.pickup).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'}) : o.time;
+    var readyStr  = o.delivery ? new Date(o.delivery).toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
+    var isOverdue = o.delivery && new Date(o.delivery) < new Date() && o.status !== 'delivered';
+    var tLabel = typeLabel[o.orderType || 'pickup'] || 'Pickup';
+    var tColor = typeColor[o.orderType || 'pickup'] || 'var(--accent)';
+    return '<div class="card" onclick="openModal(' + o.id + ')" style="cursor:pointer;' + (isOverdue?'border-color:var(--danger);':'') + '">'
+      + '<div class="card-row">'
+      + '<div>'
+      + '<div class="cname">' + o.name + (isOverdue ? ' <span style="font-size:10px;color:var(--danger);font-weight:700;">OVERDUE</span>' : '') + '</div>'
+      + '<div class="cmeta">' + o.area + (o.landmark ? ' &middot; &#128205;' + o.landmark : '') + '</div>'
+      + '<div class="cmeta" style="margin-top:3px;"><span style="color:' + tColor + ';font-weight:500;">' + tLabel + '</span> &middot; ' + pickupStr + '</div>'
+      + '<div class="cmeta">Est. ready: <span style="color:' + (isOverdue?'var(--danger)':'var(--accent2)') + ';">' + readyStr + '</span></div>'
+      + '</div>'
+      + '<div style="text-align:right;flex-shrink:0;"><div class="camount">\u20b1' + o.total.toLocaleString() + '</div><span class="pill ' + statusClass[o.status] + '" style="margin-top:4px;">' + statusLabel(o)[o.status] + '</span></div>'
+      + '</div></div>';
+  }).join('');
+}
+
+// RETENTION
+var clientFilter = 'all';
+var clientSearchQuery = '';
+
+function searchClientFilter(val){
+  clientSearchQuery = val.toLowerCase().trim();
+  renderRetention();
+}
+function filterClients(f, btn){
+  clientFilter = f;
+  clientSearchQuery = '';
+  var searchEl = document.getElementById('client-search');
+  if(searchEl) searchEl.value = '';
+  document.querySelectorAll('#s-retention .ftab').forEach(function(b){ b.classList.remove('on'); });
+  btn.classList.add('on');
+  renderRetention();
+}
+
+function buildClients(){
+  var map = {};
+  orders.forEach(function(o){
+    if(!map[o.name]) map[o.name] = {name:o.name, area:o.area, phone:o.phone||'', orders:0, total:0, lastISO:o.dateISO||o.date};
+    map[o.name].orders++;
+    map[o.name].total += o.total;
+    var d = new Date(o.dateISO || o.date);
+    if(d >= new Date(map[o.name].lastISO)) map[o.name].lastISO = o.dateISO || o.date;
+    if(o.phone) map[o.name].phone = o.phone;
+  });
+  var today = new Date();
+  return Object.values(map).map(function(cl){
+    var days = Math.floor((today - new Date(cl.lastISO)) / 86400000);
+    return Object.assign({}, cl, {days: days});
+  }).sort(function(a,b){ return b.days - a.days; });
+}
+
+function renderRetention(){
+  var clients = buildClients();
+  var followUp = clients.filter(function(cl){ return cl.days >= 14; });
+  document.getElementById('r-followup').textContent = followUp.length;
+  document.getElementById('r-total').textContent = clients.length;
+  checkNotif();
+  var el = document.getElementById('ret-list');
+  var list = clients;
+  if(clientFilter === 'followup') list = followUp;
+  else if(clientFilter === 'vip') list = clients.filter(function(cl){ return isVIP(cl.name); });
+  // Apply search filter
+  if(clientSearchQuery){
+    list = list.filter(function(cl){
+      return cl.name.toLowerCase().indexOf(clientSearchQuery) >= 0
+          || (cl.area && cl.area.toLowerCase().indexOf(clientSearchQuery) >= 0)
+          || (cl.phone && cl.phone.indexOf(clientSearchQuery) >= 0);
+    });
+  }
+  if(!list.length){ el.innerHTML = '<div class="empty" style="padding:20px 0;">' + (clients.length ? 'No clients match this filter.' : 'Add orders to see client data here.') + '</div>'; return; }
+  el.innerHTML = list.map(function(cl){
+    var smsBody = encodeURIComponent('Hi ' + cl.name + '! Kumusta? Dugay na ta wala nag-laundry together! \u{1F60A} Book na and we\'ll schedule your pickup. LabaLuxe is here for you!');
+    return '<div class="ret-card" onclick="openClientModal(\'' + cl.name + '\')" style="cursor:pointer;">'
+      + '<div class="ret-top"><div><div class="cname">' + cl.name + ' <span style="font-size:10px;color:var(--muted);">&#8250; history</span></div><div class="cmeta">' + cl.area + (cl.phone ? ' &middot; ' + cl.phone : '') + '</div></div>'
+      + '<div style="font-size:11px;font-weight:600;color:' + (cl.days>=14?'var(--danger)':'var(--muted)') + ';">' + (cl.days===0?'Today':cl.days+' days ago') + '</div></div>'
+      + '<div style="display:flex;gap:14px;">'
+      + '<div style="font-size:11px;color:var(--muted);">Orders: <strong style="color:var(--text);">' + cl.orders + '</strong></div>'
+      + '<div style="font-size:11px;color:var(--muted);">Spent: <strong style="color:var(--accent);">\u20b1' + cl.total.toLocaleString() + '</strong></div>'
+      + (isVIP(cl.name) ? '<span style="font-size:10px;background:#f0a86420;color:var(--accent2);padding:2px 7px;border-radius:10px;font-weight:600;">VIP \u20b1' + vipSettings.lockedRate + ' locked</span>' : (cl.orders >= vipSettings.threshold ? '<span style="font-size:10px;background:#7fd6a020;color:var(--accent);padding:2px 7px;border-radius:10px;font-weight:600;">Qualifies for VIP</span>' : '<span style="font-size:10px;color:var(--muted);">' + cl.orders + '/' + vipSettings.threshold + ' to VIP</span>'))
+      + '</div>'
+      + (getAvailableCredit(cl.name) > 0 ? '<div style="font-size:11px;background:#7fd6a020;color:var(--accent);padding:3px 8px;border-radius:8px;margin-top:6px;display:inline-block;font-weight:600;">Credit: ₱' + getAvailableCredit(cl.name) + ' available</div>' : '')
+      + '<div class="ret-actions">'
+      + '<button class="btn-sm" onclick="copyFollowUp(\'' + cl.name + '\',\'' + cl.area + '\')">Copy message</button>'
+      + (cl.phone ? '<button class="btn-sms" data-action="opensms" data-phone="' + cl.phone + '" data-body="' + smsBody + '">Open SMS</button>' : '')
+      + '<button class="btn-sm-ghost" data-action="add-credit" data-name="' + cl.name + '">+ Credit</button>'
+      + '</div></div>';
+  }).join('');
+  // SMS button listener
+  el.querySelectorAll('[data-action="opensms"]').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var phone = this.getAttribute('data-phone');
+      var body  = this.getAttribute('data-body');
+      window.location.href = 'sms:' + phone + '?body=' + body;
+    });
+  });
+  // Credit button listener
+  el.querySelectorAll('[data-action="add-credit"]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openAddCreditModal(this.getAttribute('data-name')); });
+  });
+}
+
+function copyFollowUp(name, area){
+  var msg = 'Hi ' + name + '! Kumusta? Dugay na ta wala nag-laundry together! \u{1F60A} Book na and we\'ll schedule your pickup. LabaLuxe is here for you!';
+  try{ navigator.clipboard.writeText(msg); }catch(e){}
+  toast('Message copied for ' + name + '!');
+}
+
+// EXPENSES
+function addExpense(){
+  var item = document.getElementById('exp-item').value.trim();
+  var amt  = parseFloat(document.getElementById('exp-amt').value) || 0;
+  var cat  = document.getElementById('exp-cat').value;
+  if(!item || !amt){ toast('Fill in item and amount'); return; }
+  expenses.unshift({item:item, amt:amt, cat:cat, date:new Date().toLocaleDateString('en-PH',{month:'short',day:'numeric'})});
+  save(); refresh();
+  document.getElementById('exp-item').value = '';
+  document.getElementById('exp-amt').value  = '';
+  toast('Expense logged!');
+}
+
+function deleteExp(i){
+  expenses.splice(i, 1);
+  save(); refresh();
+  toast('Deleted');
+}
+
+function renderExpenses(){
+  var total = expenses.reduce(function(a,e){ return a+e.amt; }, 0);
+  var rev   = orders.reduce(function(a,o){ return a+o.total; }, 0);
+  document.getElementById('e-total').textContent   = '\u20b1' + total.toLocaleString();
+  document.getElementById('e-ct').textContent       = expenses.length + ' entries';
+  document.getElementById('e-profit').textContent   = '\u20b1' + (rev - total).toLocaleString();
+  var el = document.getElementById('exp-list');
+  if(!expenses.length){ el.innerHTML = '<div class="empty">No expenses yet.</div>'; return; }
+  el.innerHTML = expenses.map(function(e, i){
+    return '<div class="exp-row">'
+      + '<div><div style="font-size:13px;">' + e.item + '</div><div class="cmeta">' + e.date + ' &middot; ' + e.cat + '</div></div>'
+      + '<div style="display:flex;align-items:center;gap:6px;">'
+      + '<div style="font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;color:var(--danger);">-\u20b1' + e.amt.toLocaleString() + '</div>'
+      + '<button class="btn-danger" onclick="deleteExp(' + i + ')">x</button>'
+      + '</div></div>';
+  }).join('');
+}
+
+// TEAM
+function addTask(){
+  var who  = document.getElementById('t-who').value;
+  var task = document.getElementById('t-task').value.trim();
+  var due  = document.getElementById('t-due').value;
+  if(!task){ toast('Enter a task'); return; }
+  tasks.unshift({who:who, task:task, due:due, done:false, id:Date.now()});
+  save(); renderTasks();
+  document.getElementById('t-task').value = '';
+  toast('Task posted to ' + who + '!');
+}
+
+function toggleTask(id){
+  var t = tasks.find(function(x){ return x.id === id; });
+  if(t){ t.done = !t.done; save(); renderTasks(); }
+}
+
+function deleteTask(id){
+  tasks = tasks.filter(function(x){ return x.id !== id; });
+  save(); renderTasks();
+  toast('Deleted');
+}
+
+var whoColor = {Wife:'var(--accent)', Staff:'var(--accent3)', Rider:'var(--accent2)', VA:'var(--muted)'};
+var whoBg    = {Wife:'#7fd6a015', Staff:'#7eb8f715', Rider:'#f0a86415', VA:'#ffffff08'};
+
+function renderTasks(){
+  var el = document.getElementById('task-list');
+  if(!tasks.length){ el.innerHTML = '<div class="empty" style="padding:20px 0;">No tasks yet.<br><span style="font-size:11px;">Post a task to your team above.</span></div>'; return; }
+  el.innerHTML = tasks.map(function(t){
+    return '<div class="task-card">'
+      + '<div class="avatar" style="background:' + (whoBg[t.who]||'#ffffff08') + ';color:' + (whoColor[t.who]||'var(--muted)') + ';">' + t.who[0] + '</div>'
+      + '<div style="flex:1">'
+      + '<div style="font-size:12px;font-weight:500;">' + t.who + ' &middot; ' + t.due + '</div>'
+      + '<div style="font-size:13px;margin-top:3px;' + (t.done?'text-decoration:line-through;opacity:.45;':'') + '">' + t.task + '</div>'
+      + '<div style="display:flex;gap:7px;margin-top:8px;">'
+      + '<button class="btn-sm" onclick="toggleTask(' + t.id + ')">' + (t.done?'Undo':'Mark done') + '</button>'
+      + '<button class="btn-sm-ghost" onclick="deleteTask(' + t.id + ')">Delete</button>'
+      + '</div></div></div>';
+  }).join('');
+}
+
+// DASHBOARD
+function refreshDash(){
+  var today = new Date().toDateString();
+  var todOrds = orders.filter(function(o){ return o.date === today; });
+  var todRev  = todOrds.reduce(function(a,o){ return a+o.total; }, 0);
+  var allRev  = orders.reduce(function(a,o){ return a+o.total; }, 0);
+  var allExp  = expenses.reduce(function(a,e){ return a+e.amt; }, 0);
+  var avg     = orders.length ? Math.round(allRev / orders.length) : 0;
+  var pct     = Math.min(100, Math.round(todRev / bizSettings.dailyTarget * 100));
+  document.getElementById('d-today').textContent      = '\u20b1' + todRev.toLocaleString();
+  document.getElementById('d-today-ct').textContent   = todOrds.length + ' order' + (todOrds.length!==1?'s':'');
+  document.getElementById('d-prog').style.width        = pct + '%';
+  document.getElementById('d-prog-lbl').textContent   = pct + '% of \u20b1' + bizSettings.dailyTarget.toLocaleString() + ' daily target';
+  document.getElementById('d-month').textContent      = '\u20b1' + allRev.toLocaleString();
+  document.getElementById('d-month-ct').textContent   = orders.length + ' total orders';
+  document.getElementById('d-avg').textContent        = '\u20b1' + avg.toLocaleString();
+  document.getElementById('d-profit').textContent     = '\u20b1' + (allRev - allExp).toLocaleString();
+  document.getElementById('d-profit-sub').textContent = allExp ? '\u20b1' + allExp.toLocaleString() + ' in expenses' : 'Log expenses for real profit';
+  var areaMap = {};
+  orders.forEach(function(o){ areaMap[o.area] = (areaMap[o.area] || 0) + o.total; });
+  var top = Object.entries(areaMap).sort(function(a,b){ return b[1]-a[1]; })[0];
+  if(top){
+    document.getElementById('d-toparea').textContent     = top[0] + ' \u2014 \u20b1' + top[1].toLocaleString();
+    var n = orders.filter(function(o){ return o.area===top[0]; }).length;
+    document.getElementById('d-toparea-sub').textContent = n + ' orders \u00b7 \u20b1' + Math.round(top[1]/n) + ' avg';
+  } else {
+    document.getElementById('d-toparea').textContent     = '\u2014';
+    document.getElementById('d-toparea-sub').textContent = 'No orders yet';
+  }
+  var sc = {pending:0, washing:0, ready:0, delivered:0};
+  orders.forEach(function(o){ if(sc[o.status]!==undefined) sc[o.status]++; });
+  document.getElementById('ds-pending').textContent   = sc.pending   + ' Scheduled';
+  document.getElementById('ds-washing').textContent   = sc.washing   + ' Sorting/Washing';
+  document.getElementById('ds-ready').textContent     = sc.ready     + ' Ready';
+  document.getElementById('ds-delivered').textContent = sc.delivered + ' Delivered';
+  var el = document.getElementById('d-recent');
+  if(!orders.length){ el.innerHTML = '<div class="empty" style="padding:20px 0;">No orders yet.<br><span style="font-size:11px;">Tap the + button to add your first order.</span></div>'; return; }
+  el.innerHTML = orders.slice(0,5).map(function(o){
+    return '<div class="card card-row" onclick="openModal(' + o.id + ')" style="cursor:pointer;">'
+      + '<div><div class="cname">' + o.name + '</div><div class="cmeta">' + o.area + ' &middot; ' + o.time + '</div></div>'
+      + '<div style="text-align:right;flex-shrink:0;"><div class="camount">\u20b1' + o.total.toLocaleString() + '</div><span class="pill ' + statusClass[o.status] + '" style="margin-top:4px;">' + statusLabel(o)[o.status] + '</span></div>'
+      + '</div>';
+  }).join('');
+}
+
+// NOTIFICATIONS
+function checkNotif(){
+  var clients = buildClients();
+  var needFollowUp = clients.filter(function(cl){ return cl.days >= 14; }).length;
+  document.getElementById('notifDot').classList.toggle('on', needFollowUp > 0);
+}
+
+// TOAST
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2300);
+}
+
+// REFRESH ALL
+function refresh(){
+  refreshDash();
+  renderOrders();
+  renderCal();
+  renderRetention();
+  renderExpenses();
+  renderTasks();
+  renderVIPSection();
+  updateTabBadges();
+}
+
+// INIT
+// Init Firebase after all scripts are loaded
+if(typeof firebase !== 'undefined'){
+  initFirebase();
+} else {
+  window.addEventListener('load', function(){ initFirebase(); });
+}
+
+
+  </script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js')
+      .then(function(reg){ console.log('SW registered'); })
+      .catch(function(err){ console.log('SW failed:', err); });
+  });
+}
+</script>
+</body>
+</html>
