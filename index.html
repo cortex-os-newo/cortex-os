@@ -2958,12 +2958,17 @@ function renderInbox(){
 }
 
 function openConvo(convoId, name){
+  // Save scroll position before hiding list
+  var listEl = document.getElementById('inbox-list');
+  if(listEl) listEl.dataset.scrollTop = listEl.scrollTop;
   currentConvoId   = convoId;
   currentConvoName = name;
   document.getElementById('convo-name').textContent = name;
   document.getElementById('inbox-list').style.display  = 'none';
   document.getElementById('convo-view').style.display  = 'block';
   document.getElementById('inbox-refresh-btn').style.display = 'none';
+  var searchEl = document.getElementById('inbox-search');
+  if(searchEl) searchEl.style.display = 'none';
   loadMessages(convoId);
 }
 
@@ -2972,6 +2977,11 @@ function closeConvo(){
   document.getElementById('convo-view').style.display  = 'none';
   document.getElementById('inbox-list').style.display  = 'block';
   document.getElementById('inbox-refresh-btn').style.display = '';
+  var searchEl = document.getElementById('inbox-search');
+  if(searchEl) searchEl.style.display = '';
+  // Restore scroll position
+  var listEl = document.getElementById('inbox-list');
+  if(listEl && listEl.dataset.scrollTop) listEl.scrollTop = parseInt(listEl.dataset.scrollTop) || 0;
 }
 
 function loadMessages(convoId){
