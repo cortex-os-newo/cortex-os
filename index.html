@@ -1021,14 +1021,18 @@ function initFirebase(){
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app').style.display          = 'block';
         document.getElementById('logout-btn').style.display   = 'block';
-        // Upsert user record — only sets createdAt if doc doesn't exist
-        var userRef = db.collection('tenants').doc('labaluxe').collection('users').doc(user.uid);
-        userRef.get().then(function(doc){
-          if(!doc.exists){
-            userRef.set({ uid: user.uid, email: user.email, role: 'user', createdAt: new Date().toISOString() });
-          }
-        }).catch(function(){});
+        // App loads immediately — auth is complete
         initApp();
+        // Non-blocking user record upsert — best effort only
+        // If this fails for any reason, login is unaffected
+        try{
+          var userRef = db.collection('tenants').doc('labaluxe').collection('users').doc(user.uid);
+          userRef.get().then(function(doc){
+            if(!doc.exists){
+              userRef.set({ uid: user.uid, email: user.email, role: 'user', createdAt: new Date().toISOString() }).catch(function(){});
+            }
+          }).catch(function(){});
+        }catch(e){}
       } else {
         document.getElementById('login-screen').style.display = 'flex';
         document.getElementById('app').style.display          = 'none';
