@@ -637,6 +637,7 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
         <button class="btn-sm" onclick="inboxData=[];nextInboxCursor=null;loadInbox();" id="inbox-refresh-btn">Refresh</button>
       </div>
       <div id="inbox-status" style="font-size:12px;color:var(--muted);margin-bottom:10px;"></div>
+      <input id="inbox-search" type="text" placeholder="Search conversations..." oninput="renderInbox()" style="width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:9px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:10px;">
       <div id="inbox-list"></div>
 
       <!-- Conversation thread (hidden until tapped) -->
@@ -2856,7 +2857,22 @@ function renderInbox(){
     return;
   }
 
-  el.innerHTML = inboxData.map(function(convo){
+  // Filter by search query if present
+  var searchEl = document.getElementById('inbox-search');
+  var query = searchEl ? searchEl.value.toLowerCase().trim() : '';
+  var list = query ? inboxData.filter(function(convo){
+    var participants = (convo.participants && convo.participants.data) || [];
+    var name = (participants.find(function(p){ return p.name !== 'LabaLuxe'; }) || participants[0] || {}).name || '';
+    var lastMsg = ((convo.messages && convo.messages.data) || [])[0] || {};
+    return name.toLowerCase().indexOf(query) >= 0 || (lastMsg.message || '').toLowerCase().indexOf(query) >= 0;
+  }) : inboxData;
+
+  if(!list.length){
+    el.innerHTML = '<div class="empty">No conversations match "' + query + '".</div>';
+    return;
+  }
+
+  el.innerHTML = list.map(function(convo){
     // Get participant name (not the Page itself)
     var participants = (convo.participants && convo.participants.data) || [];
     var client = participants.find(function(p){ return p.name !== 'LabaLuxe'; }) || participants[0] || {};
@@ -2892,10 +2908,10 @@ function renderInbox(){
     });
   });
 
-  // Show Load More button if more pages exist
+  // Show Load More button only when not searching and more pages exist
   var existing = document.getElementById('inbox-load-more');
   if(existing) existing.remove();
-  if(nextInboxCursor){
+  if(nextInboxCursor && !query){
     var btn = document.createElement('button');
     btn.id = 'inbox-load-more';
     btn.className = 'btn-ghost';
