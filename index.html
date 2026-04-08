@@ -634,7 +634,7 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
     <div class="screen" id="s-messages">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
         <div class="sec" style="margin:0;">Facebook Inbox</div>
-        <button class="btn-sm" onclick="loadInbox()" id="inbox-refresh-btn">Refresh</button>
+        <button class="btn-sm" onclick="inboxData=[];nextInboxCursor=null;loadInbox();" id="inbox-refresh-btn">Refresh</button>
       </div>
       <div id="inbox-status" style="font-size:12px;color:var(--muted);margin-bottom:10px;"></div>
       <div id="inbox-list"></div>
@@ -2783,23 +2783,24 @@ var GRAPH = 'https://graph.facebook.com/v18.0';
 var currentConvoId = null;
 var currentConvoName = '';
 var inboxData = [];
+var nextInboxCursor = null;
 
 function loadInbox(){
   var el     = document.getElementById('inbox-list');
   var status = document.getElementById('inbox-status');
   if(!el) return;
 
-  // If already have data just re-render, no need to re-fetch
+  // If already have data just re-render (tab re-open)
   if(inboxData.length){
     renderInbox();
     return;
   }
 
+  // Fresh fetch
   el.innerHTML = '<div class="empty">Loading conversations...</div>';
   if(status) status.textContent = 'Fetching from Facebook...';
 
-  // Fetch conversations from Page inbox
-  fetch(GRAPH + '/me/conversations?fields=participants,messages{message,from,created_time}&access_token=' + PAGE_TOKEN)
+  fetch(GRAPH + '/me/conversations?fields=participants,messages{message,from,created_time}&limit=25&access_token=' + PAGE_TOKEN)
     .then(function(r){ return r.json(); })
     .then(function(data){
       if(data.error){
@@ -2808,13 +2809,41 @@ function loadInbox(){
         return;
       }
       inboxData = data.data || [];
-      if(status) status.textContent = inboxData.length + ' conversation' + (inboxData.length !== 1 ? 's' : '');
+      nextInboxCursor = (data.paging && data.paging.cursors && data.paging.cursors.after) || null;
+      if(status) status.textContent = inboxData.length + ' conversation' + (inboxData.length !== 1 ? 's' : '') + (nextInboxCursor ? ' — tap Load more for older' : '');
       renderInbox();
     })
     .catch(function(e){
       el.innerHTML = '<div class="empty" style="color:var(--danger);">Could not load inbox. Check your internet connection.</div>';
       if(status) status.textContent = '';
       console.error('Inbox error:', e);
+    });
+}
+
+function loadMoreInbox(){
+  if(!nextInboxCursor) return;
+  var status = document.getElementById('inbox-status');
+  if(status) status.textContent = 'Loading more...';
+
+  fetch(GRAPH + '/me/conversations?fields=participants,messages{message,from,created_time}&limit=25&after=' + nextInboxCursor + '&access_token=' + PAGE_TOKEN)
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(data.error){
+        if(status) status.textContent = 'Error: ' + data.error.message;
+        return;
+      }
+      var newConvos = data.data || [];
+      // Deduplicate by convo ID
+      var existingIds = {};
+      inboxData.forEach(function(c){ existingIds[c.id] = true; });
+      newConvos.forEach(function(c){ if(!existingIds[c.id]) inboxData.push(c); });
+      nextInboxCursor = (data.paging && data.paging.cursors && data.paging.cursors.after) || null;
+      if(status) status.textContent = inboxData.length + ' conversation' + (inboxData.length !== 1 ? 's' : '') + (nextInboxCursor ? ' — tap Load more for older' : ' — all loaded');
+      renderInbox();
+    })
+    .catch(function(e){
+      if(status) status.textContent = 'Could not load more.';
+      console.error('Load more error:', e);
     });
 }
 
@@ -2862,6 +2891,19 @@ function renderInbox(){
       openConvo(id, name);
     });
   });
+
+  // Show Load More button if more pages exist
+  var existing = document.getElementById('inbox-load-more');
+  if(existing) existing.remove();
+  if(nextInboxCursor){
+    var btn = document.createElement('button');
+    btn.id = 'inbox-load-more';
+    btn.className = 'btn-ghost';
+    btn.style.marginTop = '8px';
+    btn.textContent = 'Load more conversations';
+    btn.onclick = loadMoreInbox;
+    el.appendChild(btn);
+  }
 }
 
 function openConvo(convoId, name){
