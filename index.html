@@ -1780,13 +1780,13 @@ function go(id, btn){
   document.getElementById('s-' + id).classList.add('active');
   if(btn) btn.classList.add('active');
   // Sync sidebar active state
-  var screenOrder = ['dashboard','orders','calendar','retention','expenses','messages','reports','settings'];
+  var screenOrder = ['dashboard','orders','calendar','retention','expenses','team','messages','reports','settings'];
   var idx = screenOrder.indexOf(id);
   if(idx >= 0) setSb(idx);
   refresh();
   if(id === 'settings') loadSettingsForm();
   if(id === 'reports')  renderReports();
-  if(id === 'messages') loadInbox();
+  if(id === 'messages') setTimeout(function(){ loadInbox(); }, 0);
   // Show FAB only on operational screens
   var fab = document.getElementById('main-fab');
   if(fab){
@@ -3471,6 +3471,7 @@ var whoBg    = {Wife:'#7fd6a015', Staff:'#7eb8f715', Rider:'#f0a86415', VA:'#fff
 
 function renderTasks(){
   var el = document.getElementById('task-list');
+  if(!el) return;
   if(!tasks.length){ el.innerHTML = '<div class="empty" style="padding:20px 0;">No tasks yet.<br><span style="font-size:11px;">Post a task to your team above.</span></div>'; return; }
   el.innerHTML = tasks.map(function(t){
     return '<div class="task-card">'
