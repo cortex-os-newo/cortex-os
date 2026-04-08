@@ -2821,7 +2821,7 @@ function loadInbox(){
     });
 }
 
-function loadMoreInbox(){
+function loadMoreInbox(callback){
   if(!nextInboxCursor) return;
   var status = document.getElementById('inbox-status');
   if(status) status.textContent = 'Loading more...';
@@ -2831,6 +2831,7 @@ function loadMoreInbox(){
     .then(function(data){
       if(data.error){
         if(status) status.textContent = 'Error: ' + data.error.message;
+        if(typeof callback === 'function') callback();
         return;
       }
       var newConvos = data.data || [];
@@ -2840,10 +2841,12 @@ function loadMoreInbox(){
       newConvos.forEach(function(c){ if(!existingIds[c.id]) inboxData.push(c); });
       nextInboxCursor = (data.paging && data.paging.cursors && data.paging.cursors.after) || null;
       if(status) status.textContent = inboxData.length + ' conversation' + (inboxData.length !== 1 ? 's' : '') + (nextInboxCursor ? ' — tap Load more for older' : ' — all loaded');
-      renderInbox();
+      if(typeof callback === 'function') callback();
+      else renderInbox();
     })
     .catch(function(e){
       if(status) status.textContent = 'Could not load more.';
+      if(typeof callback === 'function') callback();
       console.error('Load more error:', e);
     });
 }
@@ -2868,9 +2871,21 @@ function renderInbox(){
   }) : inboxData;
 
   if(!list.length){
+    if(query && nextInboxCursor && !renderInbox._searching){
+      // One controlled attempt: load next batch then re-run search
+      renderInbox._searching = true;
+      el.innerHTML = '<div class="empty" style="color:var(--muted);">Searching loaded conversations… loading more if needed.</div>';
+      loadMoreInbox(function(){
+        renderInbox._searching = false;
+        renderInbox();
+      });
+      return;
+    }
+    renderInbox._searching = false;
     el.innerHTML = '<div class="empty">No conversations match "' + query + '".</div>';
     return;
   }
+  renderInbox._searching = false;
 
   el.innerHTML = list.map(function(convo){
     // Get participant name (not the Page itself)
