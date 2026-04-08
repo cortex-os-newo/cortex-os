@@ -361,6 +361,10 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg>
       Expenses
     </button>
+    <button class="sidebar-btn" id="sb-5" onclick="go('team',null);setSb(5)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Team
+    </button>
     <button class="sidebar-btn" id="sb-msg" onclick="go('messages',null);setSb(8)">
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
       Messages
@@ -628,6 +632,12 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
       <button class="btn" onclick="addExpense()">Log expense</button>
       <div class="sec" style="margin-top:20px;">Expense log</div>
       <div class="card" id="exp-list"><div class="empty">No expenses logged yet.</div></div>
+    </div>
+
+    <!-- TEAM -->
+    <div class="screen" id="s-team">
+      <div class="sec">Team members</div>
+      <div id="team-list"><div class="empty">Loading...</div></div>
     </div>
 
     <!-- MESSAGES -->
@@ -1011,6 +1021,13 @@ function initFirebase(){
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app').style.display          = 'block';
         document.getElementById('logout-btn').style.display   = 'block';
+        // Upsert user record — only sets createdAt if doc doesn't exist
+        var userRef = db.collection('tenants').doc('labaluxe').collection('users').doc(user.uid);
+        userRef.get().then(function(doc){
+          if(!doc.exists){
+            userRef.set({ uid: user.uid, email: user.email, role: 'user', createdAt: new Date().toISOString() });
+          }
+        }).catch(function(){});
         initApp();
       } else {
         document.getElementById('login-screen').style.display = 'flex';
@@ -1809,6 +1826,7 @@ function go(id, btn){
   if(id === 'settings') loadSettingsForm();
   if(id === 'reports')  renderReports();
   if(id === 'messages') setTimeout(function(){ loadInbox(); }, 0);
+  if(id === 'team')     renderTeam();
   // Show FAB only on operational screens
   var fab = document.getElementById('main-fab');
   if(fab){
@@ -3762,6 +3780,33 @@ function checkNotif(){
 }
 
 // TOAST
+function renderTeam(){
+  var el = document.getElementById('team-list');
+  if(!el) return;
+  el.innerHTML = '<div class="empty">Loading...</div>';
+  db.collection('tenants').doc('labaluxe').collection('users').get()
+    .then(function(snap){
+      if(snap.empty){ el.innerHTML = '<div class="empty">No users found.</div>'; return; }
+      var html = '';
+      snap.forEach(function(doc){
+        var u = doc.data();
+        var role = u.role || 'user';
+        var roleColor = role === 'admin' ? 'var(--accent)' : 'var(--muted)';
+        html += '<div class="card" style="display:flex;justify-content:space-between;align-items:center;">'\
+          + '<div>'\
+          + '<div style="font-size:14px;font-weight:500;">' + (u.email || '—') + '</div>'\
+          + '<div style="font-size:11px;color:var(--muted);margin-top:3px;">UID: ' + (u.uid || doc.id) + '</div>'\
+          + '</div>'\
+          + '<span style="font-size:11px;font-weight:600;color:' + roleColor + ';background:' + roleColor + '20;padding:3px 10px;border-radius:10px;">' + role + '</span>'\
+          + '</div>';
+      });
+      el.innerHTML = html;
+    })
+    .catch(function(e){
+      el.innerHTML = '<div class="empty" style="color:var(--danger);">Could not load users.</div>';
+    });
+}
+
 function toast(msg){
   var t = document.getElementById('toast');
   t.textContent = msg;
