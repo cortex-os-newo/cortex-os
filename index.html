@@ -642,10 +642,11 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
 
       <!-- Conversation thread (hidden until tapped) -->
       <div id="convo-view" style="display:none;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
           <button onclick="closeConvo()" style="background:none;border:none;color:var(--accent);font-size:14px;cursor:pointer;padding:0;">&#8592; Back</button>
           <div id="convo-name" style="font-weight:600;font-size:15px;"></div>
         </div>
+        <div id="convo-tag-row" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
         <div id="convo-messages" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;max-height:50vh;overflow-y:auto;"></div>
         <div style="display:flex;gap:8px;">
           <input id="reply-input" placeholder="Type a reply..." style="flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;">
@@ -2785,6 +2786,48 @@ var currentConvoId = null;
 var currentConvoName = '';
 var inboxData = [];
 var nextInboxCursor = null;
+var convoTags = (function(){ try{ return JSON.parse(localStorage.getItem('cx_convo_tags')||'{}'); }catch(e){ return {}; } })();
+
+var INBOX_TAGS = ['Lead','Follow-up','Urgent','Paid','Spam'];
+var TAG_COLORS = {
+  'Lead':      {bg:'#7fd6a020', color:'var(--accent)'},
+  'Follow-up': {bg:'#7eb8f720', color:'var(--accent3)'},
+  'Urgent':    {bg:'#f0707020', color:'var(--danger)'},
+  'Paid':      {bg:'#f0a86420', color:'var(--accent2)'},
+  'Spam':      {bg:'#ffffff0e', color:'var(--muted)'}
+};
+
+function saveConvoTags(){
+  try{ localStorage.setItem('cx_convo_tags', JSON.stringify(convoTags)); }catch(e){}
+}
+
+function toggleConvoTag(tag){
+  if(!currentConvoId) return;
+  if(!convoTags[currentConvoId]) convoTags[currentConvoId] = [];
+  var idx = convoTags[currentConvoId].indexOf(tag);
+  if(idx >= 0) convoTags[currentConvoId].splice(idx, 1);
+  else convoTags[currentConvoId].push(tag);
+  saveConvoTags();
+  renderConvoTagRow();
+}
+
+function renderConvoTagRow(){
+  var el = document.getElementById('convo-tag-row');
+  if(!el || !currentConvoId) return;
+  var active = convoTags[currentConvoId] || [];
+  el.innerHTML = INBOX_TAGS.map(function(tag){
+    var isActive = active.indexOf(tag) >= 0;
+    var col = TAG_COLORS[tag] || {bg:'#ffffff0e', color:'var(--muted)'};
+    return '<button onclick="toggleConvoTag(\'' + tag + '\')" style="'
+      + 'background:' + (isActive ? col.bg : 'var(--surface)') + ';'
+      + 'color:' + (isActive ? col.color : 'var(--muted)') + ';'
+      + 'border:1px solid ' + (isActive ? col.color : 'var(--border)') + ';'
+      + 'border-radius:20px;padding:4px 11px;font-size:11px;font-weight:' + (isActive ? '600' : '400') + ';'
+      + 'cursor:pointer;font-family:\'DM Sans\',sans-serif;transition:all .15s;">'
+      + tag
+      + '</button>';
+  }).join('');
+}
 
 function loadInbox(){
   var el     = document.getElementById('inbox-list');
@@ -2926,6 +2969,7 @@ function renderInbox(){
       + '<div style="min-width:0;flex:1;">'
       + '<div style="font-size:14px;font-weight:' + (isUnread?'700':'600') + ';">' + name + '</div>'
       + '<div style="font-size:12px;color:' + (isUnread?'var(--text)':'var(--muted)') + ';margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (preview||'No messages yet') + '</div>'
+      + (function(){ var t=convoTags[convo.id]||[]; if(!t.length) return ''; return '<div style="display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;">' + t.map(function(tg){ var c=TAG_COLORS[tg]||{bg:'#ffffff0e',color:'var(--muted)'}; return '<span style="background:'+c.bg+';color:'+c.color+';border-radius:10px;padding:2px 7px;font-size:10px;font-weight:600;">'+tg+'</span>'; }).join('') + '</div>'; })()
       + '</div></div>'
       + '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">'
       + '<div style="font-size:11px;color:var(--muted);">' + displayTime + '</div>'
@@ -2969,6 +3013,7 @@ function openConvo(convoId, name){
   document.getElementById('inbox-refresh-btn').style.display = 'none';
   var searchEl = document.getElementById('inbox-search');
   if(searchEl) searchEl.style.display = 'none';
+  renderConvoTagRow();
   loadMessages(convoId);
 }
 
