@@ -446,6 +446,10 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg>
       Expenses
     </button>
+    <button class="sidebar-btn" id="sb-msg" onclick="go('messages',null);setSb(8)">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Messages
+    </button>
     <button class="sidebar-btn" id="sb-6" onclick="go('reports',null);setSb(6)">
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Reports
@@ -458,6 +462,7 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
   </div>
 
   <div class="scroll">
+  <div class="main-content">
 
     <!-- DASHBOARD -->
     <div class="screen active" id="s-dashboard">
@@ -889,6 +894,7 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
 
     </div>
 
+  </div><!-- end main-content -->
   </div><!-- end scroll -->
 
   <button class="fab" id="main-fab" onclick="go('orders',document.querySelectorAll('.tab-btn')[1])">
