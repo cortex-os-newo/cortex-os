@@ -2491,8 +2491,9 @@ function openClientModal(name){
     btn.addEventListener('click', function(){
       var action = this.getAttribute('data-action');
       if(action === 'edit-profile'){
+        var ename = this.getAttribute('data-name');
         closeClientModal();
-        openEditClientModal(this.getAttribute('data-name'));
+        setTimeout(function(){ openEditClientModal(ename); }, 50);
       }
       if(action === 'revoke-vip'){
         revokeVIP(this.getAttribute('data-name'));
