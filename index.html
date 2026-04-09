@@ -1198,8 +1198,16 @@ function startListeners(){
   // Orders
   unsubscribers.push(
     BASE().collection('orders').onSnapshot(function(snap){
+      var seen = {};
       orders = [];
-      snap.forEach(function(doc){ orders.push(Object.assign({}, doc.data())); });
+      snap.forEach(function(doc){
+        var o = doc.data();
+        var key = String(o.id);
+        if(!seen[key]){
+          seen[key] = true;
+          orders.push(Object.assign({}, o));
+        }
+      });
       refreshDash(); renderOrders(); renderCal(); renderRetention(); updateTabBadges();
     })
   );
@@ -1229,15 +1237,8 @@ function stopListeners(){
 // ── OVERRIDE SAVE/LOAD ────────────────────────────────────────
 // Replace localStorage save with Firestore
 function save(){
-  // Save all orders
-  var batch = db.batch();
-  orders.forEach(function(o){
-    var ref = BASE().collection('orders').doc(String(o.id));
-    batch.set(ref, o);
-  });
-  batch.commit().catch(function(e){ console.error('Save orders error:', e); });
-
-  // Save VIP clients
+  // Orders are now written individually via saveOrderDoc() — do NOT batch-write here
+  // Only save config/settings docs
   fsSaveDoc('vipClients', vipClients);
   fsSaveDoc('pricing', pricing);
   fsSaveDoc('bizSettings', bizSettings);
@@ -1355,9 +1356,7 @@ var sampleExpenses = [
 ];
 
 
-// Pre-load sample data if storage is empty
-if(!orders.length)   orders   = sampleOrders;
-if(!expenses.length) expenses = sampleExpenses;
+// Data loaded via Firestore listeners — no sample preload in production
 
 
 // save() handled by Firebase (see initFirebase)
@@ -1531,20 +1530,20 @@ function getPendingVIPs(){
 function approveVIP(name){
   vipClients[name] = { status:'active', since: new Date().toISOString().slice(0,10), referrals:0, freeRushUsed:'' };
   if(!clientCredits[name]) clientCredits[name] = [];
-  save(); saveCredits(); renderRetention(); renderVIPSection(); checkNotif();
+  fsSaveDoc('vipClients', vipClients); saveCredits(); renderRetention(); renderVIPSection(); checkNotif();
   toast(name + ' is now VIP!');
 }
 
 function revokeVIP(name){
   if(vipClients[name]) vipClients[name].status = 'revoked';
-  save(); renderRetention(); renderVIPSection(); checkNotif();
+  fsSaveDoc('vipClients', vipClients); renderRetention(); renderVIPSection(); checkNotif();
   toast(name + ' VIP revoked');
 }
 
 function addReferral(name){
   if(!vipClients[name]) return;
   vipClients[name].referrals = (vipClients[name].referrals || 0) + 1;
-  save(); renderVIPSection();
+  fsSaveDoc('vipClients', vipClients); renderVIPSection();
   toast('Referral recorded for ' + name + '!');
 }
 
@@ -1553,7 +1552,7 @@ function useFreeRush(name){
   var now2 = new Date();
   var monthKey = now2.getFullYear() + '-' + String(now2.getMonth()+1).padStart(2,'0');
   vipClients[name].freeRushUsed = monthKey;
-  save(); renderVIPSection();
+  fsSaveDoc('vipClients', vipClients); renderVIPSection();
   toast('Free rush used for ' + name + ' this month');
 }
 
@@ -2146,11 +2145,17 @@ function nextLabel(order){
 var typeLabel   = {pickup:'Pickup & Deliver', dropoff:'Drop-off / Walk-in'};
 var typeColor   = {pickup:'var(--accent)', dropoff:'var(--accent2)'};
 
+function saveOrderDoc(o){
+  // Write only this single order doc — avoids triggering full batch re-write
+  BASE().collection('orders').doc(String(o.id)).set(o)
+    .catch(function(e){ console.error('saveOrderDoc error:', e); });
+}
+
 function advanceStatus(id){
   var o = orders.find(function(x){ return x.id === id; });
   if(!o) return;
   o.status = nextStatus[o.status];
-  save(); refresh();
+  saveOrderDoc(o); refresh();
   toast(o.name + ' moved to ' + statusLabel(o)[o.status]);
   checkNotif();
 }
@@ -2171,9 +2176,17 @@ function confirmDelete(id){
 }
 
 function deleteOrder(id){
-  orders = orders.filter(function(x){ return x.id !== id; });
-  save(); refresh(); closeModal();
-  toast('Order deleted');
+  fsDelete('orders', id)
+    .then(function(){
+      orders = orders.filter(function(x){ return x.id !== id; });
+      refresh();
+      closeModal();
+      toast('Order deleted');
+    })
+    .catch(function(e){
+      console.error('Delete order error:', e);
+      toast('Could not delete order. Check connection.');
+    });
 }
 
 // ORDER LIST
@@ -2351,7 +2364,7 @@ function saveEdit(){
   o.pay      = document.getElementById('edit-pay').value;
   var newTotal = calcEdit();
   if(newTotal !== null) o.total = newTotal;
-  save(); refresh();
+  saveOrderDoc(o); refresh();
   closeEditModal();
   toast('Order updated!');
 }
@@ -2366,7 +2379,7 @@ function markPaid(id){
   var o = orders.find(function(x){ return x.id === id; });
   if(!o) return;
   o.pay = 'Paid';
-  save(); refresh();
+  saveOrderDoc(o); refresh();
   closeModal();
   toast('Marked as paid!');
 }
@@ -2799,6 +2812,12 @@ function importBackup(input){
       if(backup.serviceAreas) serviceAreas = backup.serviceAreas;
 
       save();
+      // Also write restored orders individually to Firestore
+      var batch = db.batch();
+      orders.forEach(function(o){
+        batch.set(BASE().collection('orders').doc(String(o.id)), o);
+      });
+      batch.commit().catch(function(e){ console.error('importBackup orders error:', e); });
       refresh();
       updateAreaDropdown();
       renderVIPSection();
@@ -3836,16 +3855,19 @@ function addExpense(){
   var amt  = parseFloat(document.getElementById('exp-amt').value) || 0;
   var cat  = document.getElementById('exp-cat').value;
   if(!item || !amt){ toast('Fill in item and amount'); return; }
-  expenses.unshift({item:item, amt:amt, cat:cat, date:new Date().toLocaleDateString('en-PH',{month:'short',day:'numeric'})});
-  save(); refresh();
+  var exp = {item:item, amt:amt, cat:cat, id:Date.now(), date:new Date().toLocaleDateString('en-PH',{month:'short',day:'numeric'})};
+  BASE().collection('expenses').doc(String(exp.id)).set(exp).catch(function(e){ console.error('addExpense error:',e); });
   document.getElementById('exp-item').value = '';
   document.getElementById('exp-amt').value  = '';
   toast('Expense logged!');
 }
 
 function deleteExp(i){
+  var exp = expenses[i];
+  if(!exp) return;
   expenses.splice(i, 1);
-  save(); refresh();
+  if(exp.id) fsDelete('expenses', exp.id);
+  refresh();
   toast('Deleted');
 }
 
