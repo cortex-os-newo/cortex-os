@@ -931,6 +931,16 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
 
   <!-- CREDIT MODAL -->
   <div class="modal-bg" id="credit-modal-bg" onclick="closeCreditModal(event)">
+    <div class="modal" id="credit-modal-content">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Add credit for <span id="credit-client-name"></span></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;">Current balance: <strong id="credit-current-bal" style="color:var(--accent);">&#8369;0</strong></div>
+      <div class="field"><label>Amount (&#8369;)</label><input type="number" id="credit-amount" placeholder="e.g. 50" min="1"></div>
+      <div class="field"><label>Reason</label><input type="text" id="credit-reason" placeholder="e.g. Goodwill, complaint resolution, birthday..."></div>
+      <button class="btn" onclick="saveManualCredit()">Add credit</button>
+      <button class="btn-ghost" onclick="closeCreditModal()">Cancel</button>
+    </div>
+  </div>
 
   <!-- EDIT CLIENT MODAL -->
   <div class="modal-bg" id="edit-client-modal-bg" onclick="closeEditClientModal(event)">
@@ -943,16 +953,6 @@ body.light-mode .kc.accent-border{border-color:var(--accent);}
       <div class="field"><label>Internal notes</label><textarea id="ec-notes" placeholder="e.g. Uses unscented detergent, call before pickup..." style="height:72px;resize:none;"></textarea></div>
       <button class="btn" onclick="saveClientProfile()">Save profile</button>
       <button class="btn-ghost" onclick="closeEditClientModal()">Cancel</button>
-    </div>
-  </div>
-    <div class="modal" id="credit-modal-content">
-      <div class="modal-handle"></div>
-      <div class="modal-title">Add credit for <span id="credit-client-name"></span></div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;">Current balance: <strong id="credit-current-bal" style="color:var(--accent);">&#8369;0</strong></div>
-      <div class="field"><label>Amount (&#8369;)</label><input type="number" id="credit-amount" placeholder="e.g. 50" min="1"></div>
-      <div class="field"><label>Reason</label><input type="text" id="credit-reason" placeholder="e.g. Goodwill, complaint resolution, birthday..."></div>
-      <button class="btn" onclick="saveManualCredit()">Add credit</button>
-      <button class="btn-ghost" onclick="closeCreditModal()">Cancel</button>
     </div>
   </div>
 
