@@ -1910,9 +1910,19 @@ document.getElementById('datePill').textContent =
 
 // CALC
 function calc(){
-  var cl  = parseFloat(document.getElementById('o-c').value)   || 0;
-  var sh  = parseFloat(document.getElementById('o-s').value)   || 0;
-  var com = parseFloat(document.getElementById('o-com').value) || 0;
+  // Read from dynamic service fields
+  var clothesSvc = services.find(function(s){ return s.id === 'clothes'; });
+  var sheetsSvc  = services.find(function(s){ return s.id === 'sheets'; });
+  var comfSvc    = services.find(function(s){ return s.id === 'comforter'; });
+
+  var clEl  = document.getElementById('svc_input_clothes')  || document.getElementById('o-c');
+  var shEl  = document.getElementById('svc_input_sheets')   || document.getElementById('o-s');
+  var comEl = document.getElementById('svc_input_comforter')|| document.getElementById('o-com');
+
+  var cl  = clEl  ? (parseFloat(clEl.value)  || 0) : 0;
+  var sh  = shEl  ? (parseFloat(shEl.value)  || 0) : 0;
+  var com = comEl ? (parseFloat(comEl.value) || 0) : 0;
+
   var rush = document.getElementById('o-rush').value === 'yes';
   var clientName = (document.getElementById('o-name').value || '').trim();
   var baseClothesPrice = isVIP(clientName) ? vipSettings.lockedRate : pricing.clothesPrice;
