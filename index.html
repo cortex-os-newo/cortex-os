@@ -2045,7 +2045,7 @@ function saveOrder(){
     var el = document.getElementById('svc_input_' + svc.id);
     if(el && parseFloat(el.value)) serviceQtys[svc.id] = parseFloat(el.value);
   });
-  orders.unshift({
+  var newOrder = {
     id: Date.now(), name: name, area: area, phone: phone,
     landmark: landmark, total: total, pay: pay,
     orderType: currentOrderType,
@@ -2057,8 +2057,14 @@ function saveOrder(){
     date: new Date().toDateString(),
     dateISO: new Date().toISOString().slice(0,10),
     time: new Date().toLocaleTimeString('en-PH', {hour:'2-digit', minute:'2-digit'})
-  });
-  save();
+  };
+  // Write directly to Firestore — onSnapshot will add it to local orders array
+  // Do NOT push to orders locally to avoid duplication
+  BASE().collection('orders').doc(String(newOrder.id)).set(newOrder)
+    .catch(function(e){ console.error('Save order error:', e); toast('Error saving order'); });
+  // Save VIP/config changes
+  fsSaveDoc('vipClients', vipClients);
+  fsSaveDoc('credits', clientCredits);
   // Send referral welcome SMS if applicable
   var referrerSelCheck = document.getElementById('o-referrer');
   if(referrerSelCheck && referrerSelCheck.value && isVIP(referrerSelCheck.value)){
@@ -2068,15 +2074,15 @@ function saveOrder(){
     var referralSMS = 'Hi ' + name + '! Welcome to LabaLuxe! \u{1F389} ' + refName + ' referred you so you get \u20B120 off this order. Your laundry pickup is scheduled on ' + pickupDisplayStr + '. Palihug og ready ha! \u{1F9FA}';
     var phoneEl2 = document.getElementById('o-phone');
     if(phoneEl2 && phoneEl2.value){
-      // Store for modal to show
-      orders[0].referralSMSReady = encodeURIComponent(referralSMS);
+      newOrder.referralSMSReady = encodeURIComponent(referralSMS);
+      BASE().collection('orders').doc(String(newOrder.id)).update({ referralSMSReady: newOrder.referralSMSReady }).catch(function(){});
     }
   }
 
   // Apply client credit
   if(creditAmt > 0){
-    consumeNextCredit(orders[0].name);
-    orders[0].creditApplied = creditAmt;
+    consumeNextCredit(newOrder.name);
+    BASE().collection('orders').doc(String(newOrder.id)).update({ creditApplied: creditAmt }).catch(function(){});
   }
 
   // Credit VIP referrer
