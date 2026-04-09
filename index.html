@@ -2029,6 +2029,10 @@ function saveOrder(){
   if(!name || !area){ toast('Fill in name and area'); return; }
   var total = calc();
   if(!total){ toast('Add at least one item'); return; }
+  // Recalculate creditAmt in saveOrder scope so it's available below
+  var creditClientName = (document.getElementById('o-name').value || '').trim();
+  var nextCredForSave  = creditClientName ? getNextCredit(creditClientName) : null;
+  var creditAmt        = nextCredForSave ? nextCredForSave.amount : 0;
   var phone    = document.getElementById('o-phone').value.trim();
   var landmark = document.getElementById('o-landmark').value.trim();
   var pay      = document.getElementById('o-pay').value;
