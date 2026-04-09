@@ -2185,6 +2185,8 @@ function renderOrders(){
   var list = orderFilter === 'all' ? orders
     : typeFilters.indexOf(orderFilter) >= 0 ? orders.filter(function(o){ return (o.orderType || 'pickup') === orderFilter; })
     : orders.filter(function(o){ return o.status === orderFilter; });
+  // Sort by date descending — most recent first
+  list = list.slice().sort(function(a,b){ return (b.dateISO||b.date) > (a.dateISO||a.date) ? 1 : -1; });
   if(!list.length){ el.innerHTML = '<div class="empty">No orders here.</div>'; return; }
   el.innerHTML = list.map(function(o){
     var tColor = typeColor[o.orderType || 'pickup'] || 'var(--accent)';
@@ -3944,7 +3946,8 @@ function refreshDash(){
   document.getElementById('ds-delivered').textContent = sc.delivered + ' Delivered';
   var el = document.getElementById('d-recent');
   if(!orders.length){ el.innerHTML = '<div class="empty" style="padding:20px 0;">No orders yet.<br><span style="font-size:11px;">Tap the + button to add your first order.</span></div>'; return; }
-  el.innerHTML = orders.slice(0,5).map(function(o){
+  var recentSorted = orders.slice().sort(function(a,b){ return (b.dateISO||b.date) > (a.dateISO||a.date) ? 1 : -1; });
+  el.innerHTML = recentSorted.slice(0,5).map(function(o){
     return '<div class="card card-row" onclick="openModal(' + o.id + ')" style="cursor:pointer;">'
       + '<div><div class="cname">' + o.name + '</div><div class="cmeta">' + o.area + ' &middot; ' + o.time + '</div></div>'
       + '<div style="text-align:right;flex-shrink:0;"><div class="camount">\u20b1' + o.total.toLocaleString() + '</div><span class="pill ' + statusClass[o.status] + '" style="margin-top:4px;">' + statusLabel(o)[o.status] + '</span></div>'
